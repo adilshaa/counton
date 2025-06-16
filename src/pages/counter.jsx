@@ -3,6 +3,7 @@ import { Film } from "lucide-react"; // Only Film is potentially used if any top
 import ControlsPanel from '../components/ControlsPanel';
 import VideoPreview from '../components/VideoPreview';
 import ActionButtons from '../components/ActionButtons';
+import AuthDetails from '../components/AuthDetails';
 
 const TimeCounterVideoApp = () => {
   const [duration, setDuration] = useState(60);
@@ -795,7 +796,7 @@ const TimeCounterVideoApp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black p-0 transition-colors duration-300">
-      <div className="w-full h-screen flex">
+      <div className="w-full h-screen flex relative"> {/* Added relative for AuthDetails positioning */}
         <ControlsPanel
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -825,6 +826,9 @@ const TimeCounterVideoApp = () => {
 
         {/* Right Side - Video Section */}
         <div className="flex-1 h-full flex flex-col">
+          <div className="absolute top-4 right-4 z-50">
+            <AuthDetails />
+          </div>
           <VideoPreview
             canvasRef={canvasRef}
             isRecording={isRecording}

@@ -1,19 +1,21 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import RegistrationPage from './pages/RegistrationPage';
+import TimeCounterVideoApp from './pages/counter';
+import ProtectedRoute from './components/ProtectedRoute';
 import "./App.css";
-import TimeCounterVideoApp from "./pages/counter";
 
 function App() {
   return (
-    <>
-      <Router>
-        <Routes>
-          <Route path="/" element={<TimeCounterVideoApp />} />
-        </Routes>
-      </Router>
-    </>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegistrationPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<TimeCounterVideoApp />} />
+        {/* Add other protected routes here if needed */}
+      </Route>
+    </Routes>
   );
 }
 
