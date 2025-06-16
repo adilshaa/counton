@@ -451,12 +451,123 @@ const TimeCounterVideoApp = () => {
     };
   }, []);
 
-  const startRecording = async () => { /* ... same as before ... */ };
-  const startTimer = () => { /* ... same as before ... */ };
+  const startRecording = async () => {
+    setIsRecording(true);
+    setIsPaused(false);
+    setIsComplete(false);
+    setCurrentTime(0);
+    setRecordedChunks([]);
+    previousTime.current = -1; // Reset previous time for animations
+    animationPhase.current = 0; // Reset animation phase
+
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      console.error("Canvas not available for recording.");
+      setIsRecording(false); // Reset state if canvas is not there
+      return;
+    }
+
+    // Ensure canvas is prepared with DPR scaling and initial frame drawn
+    // Note: drawTimer now handles DPR setup internally.
+    // We pass the initial time (0 for a new recording).
+    drawTimer(0); // THIS IS THE KEY ADDITION/RE-ORDERING
+
+    try {
+      // It's good practice to check if captureStream is supported
+      if (!canvas.captureStream) {
+        console.error("HTMLCanvasElement.captureStream() is not supported by this browser.");
+        alert("Video recording is not supported by your browser.");
+        setIsRecording(false);
+        return;
+      }
+
+      streamRef.current = canvas.captureStream(25); // 25 FPS, or make configurable
+
+      if (!streamRef.current) {
+          console.error("Failed to capture stream from canvas.");
+          setIsRecording(false);
+          return;
+      }
+
+      const options = { mimeType: "video/webm; codecs=vp9" }; // Or other supported types
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          console.warn(`${options.mimeType} is not supported, trying default.`);
+          // Try with no specific mimeType or a fallback
+          try {
+              mediaRecorderRef.current = new MediaRecorder(streamRef.current);
+          } catch (e) {
+              console.error("MediaRecorder setup failed with default options:", e);
+              alert("Failed to initialize video recorder with default settings.");
+              setIsRecording(false);
+              return;
+          }
+      } else {
+          mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
+      }
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          setRecordedChunks((prev) => [...prev, event.data]);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        setIsComplete(true);
+        setIsRecording(false);
+        setIsPaused(false);
+        if (streamRef.current) { // Ensure streamRef.current exists
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+      };
+
+      mediaRecorderRef.current.onerror = (event) => {
+          console.error("MediaRecorder error:", event.error);
+          alert(`MediaRecorder error: ${event.error.name} - ${event.error.message}`);
+          // Consider stopping recording or handling error appropriately
+          stopRecording(); // Example: attempt to stop and cleanup
+      };
+
+      mediaRecorderRef.current.start();
+      startTimerInternal(); // Renamed from startTimer to avoid conflict if startTimer becomes async or more complex
+
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      alert(`Could not start recording: ${error.message}`);
+      setIsRecording(false); // Reset recording state
+      if (streamRef.current) { // Cleanup stream if it was partially setup
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+      }
+    }
+  };
+
+  const startTimerInternal = () => {
+      if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+      }
+      const effectiveSpeed = useCustomSpeed ? customSpeed : speed;
+      intervalRef.current = setInterval(() => {
+          setCurrentTime((prevTime) => {
+              const newTime = prevTime + (1 / (1000 / (1000 / effectiveSpeed))) / (1000 / 100); // Adjusted for 10ms interval
+              if (newTime >= duration) {
+                  clearInterval(intervalRef.current);
+                  if (isRecording && mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+                      mediaRecorderRef.current.stop(); // This will trigger onstop
+                  } else {
+                      setIsComplete(true); // Set complete if not recording but timer finishes
+                      setIsRecording(false);
+                  }
+                  return duration;
+              }
+              return newTime;
+          });
+      }, 10); // Update interval to 10ms for smoother animation in drawTimer
+  };
+
   const pauseRecording = () => { /* ... same as before ... */ };
   const stopRecording = () => { /* ... same as before ... */ };
   const downloadVideo = () => { /* ... same as before ... */ };
-  // The actual implementations of startRecording, startTimer, pauseRecording, stopRecording, downloadVideo
+  // The actual implementations of pauseRecording, stopRecording, downloadVideo
   // are lengthy and assumed to be correct as per previous versions. For brevity, they are not repeated here.
   // Make sure they are present in the actual file.
 
@@ -496,6 +607,7 @@ const TimeCounterVideoApp = () => {
             <AuthDetails />
           </div>
           <VideoPreview
+            className="flex-grow min-h-0" // Added classes
             canvasRef={canvasRef}
             isRecording={isRecording}
             isPaused={isPaused}
@@ -503,6 +615,7 @@ const TimeCounterVideoApp = () => {
             duration={duration}
           />
           <ActionButtons
+            className="flex-shrink-0" // Added class
             isRecording={isRecording}
             isPaused={isPaused}
             isComplete={isComplete}
