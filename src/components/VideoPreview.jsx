@@ -22,10 +22,9 @@ const VideoPreview = ({
         <div className="relative flex-1 flex items-center justify-center">
           <canvas
             ref={canvasRef}
-            width={800}
-            height={600}
+            // width and height attributes removed
             className="max-w-full max-h-full border border-gray-300/70 bg-gray-200/50 dark:border-gray-600/30 dark:bg-gray-900/50 rounded-xl shadow-2xl backdrop-blur-sm transition-colors duration-300"
-            style={{ maxWidth: "100%", height: "auto" }}
+            style={{ width: "100%", height: "100%" }}
           />
 
           {/* Recording Overlay */}
