@@ -364,13 +364,44 @@ const TimeCounterVideoApp = () => {
       drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, null);
       ctx.fillText(":", colonX, centerY);
 
-      // Animate seconds with slide and fade transition
-      const swapProgress = (animationPhase.current % 30) / 30; // Changed from 15 to 30 frames
-      const secTensTransition = getSlideAndFadeInTransition(secTens, prevSecTens, swapProgress, fontSize);
-      drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, secTensTransition);
+      // Animate seconds with roll transition
+      const rollPhase = (animationPhase.current % 30) / 30;
 
-      const secOnesTransition = getSlideAndFadeInTransition(secOnes, prevSecOnes, swapProgress, fontSize);
-      drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, secOnesTransition);
+      if (prevSecTens && secTens !== prevSecTens && rollPhase < 0.5) {
+        const scaleY = 1 - rollPhase * 2;
+        ctx.save();
+        ctx.translate(secTensX, centerY);
+        ctx.scale(1, scaleY);
+        ctx.fillText(prevSecTens, 0, 0);
+        ctx.restore();
+      } else if (prevSecTens && secTens !== prevSecTens && rollPhase >= 0.5) {
+        const scaleY = (rollPhase - 0.5) * 2;
+        ctx.save();
+        ctx.translate(secTensX, centerY);
+        ctx.scale(1, scaleY);
+        ctx.fillText(secTens, 0, 0);
+        ctx.restore();
+      } else {
+        drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, null);
+      }
+
+      if (prevSecOnes && secOnes !== prevSecOnes && rollPhase < 0.5) {
+        const scaleY = 1 - rollPhase * 2;
+        ctx.save();
+        ctx.translate(secOnesX, centerY);
+        ctx.scale(1, scaleY);
+        ctx.fillText(prevSecOnes, 0, 0);
+        ctx.restore();
+      } else if (prevSecOnes && secOnes !== prevSecOnes && rollPhase >= 0.5) {
+        const scaleY = (rollPhase - 0.5) * 2;
+        ctx.save();
+        ctx.translate(secOnesX, centerY);
+        ctx.scale(1, scaleY);
+        ctx.fillText(secOnes, 0, 0);
+        ctx.restore();
+      } else {
+        drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, null);
+      }
 
     } else { // Includes "fade" (handled by globalAlpha at start) and "none"
       drawTextWithTransition(ctx, minTens, minTensX, centerY, fontSize, null);
