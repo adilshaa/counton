@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,17 +21,23 @@ const LoginPage = () => {
       return;
     }
 
-    // Simulate login process
-    setTimeout(() => {
-      if (email && password) {
+    try {
+      const response = await login(email, password);
+      if (response.success) {
+        // Navigation is handled by ProtectedRoute now, or AuthContext state change.
+        // The navigate('/') call was here from previous step, it's still valid after successful context update.
+        // If AuthContext correctly sets isAuthenticated, ProtectedRoute will handle it.
+        // Explicit navigation after successful login is good practice.
         navigate('/');
-        setEmail("");
-        setPassword("");
       } else {
-        setError("Login failed. Please check your credentials.");
+        setError(response.message || "Login failed. Please check your credentials.");
       }
+    } catch (err) {
+      console.error("Login page error:", err);
+      setError("An unexpected error occurred during login.");
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -190,9 +198,7 @@ const LoginPage = () => {
               <p className="text-silver-muted">
                 Don't have an account?{" "}
                 <button
-                  onClick={() =>
-                    alert("In a real app, this would navigate to register")
-                  }
+                  onClick={() => navigate('/register')}
                   className="text-silver hover:text-white transition-colors duration-300 underline decoration-silver-muted hover:decoration-silver bg-transparent border-none cursor-pointer font-medium"
                 >
                   Create one now

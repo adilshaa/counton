@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../contexts/AuthContext';
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,18 +22,20 @@ const RegistrationPage = () => {
       return;
     }
 
-    // Simulate registration process
-    setTimeout(() => {
-      if (email && password && name) {
-        navigate('/login');
-        setName("");
-        setEmail("");
-        setPassword("");
+    try {
+      const response = await register(name, email, password);
+      if (response.success) {
+        alert(response.message || "Registration successful! Please login."); // Give feedback
+        navigate('/login'); // Redirect to login page
       } else {
-        setError("Registration failed. Please try again.");
+        setError(response.message || "Registration failed. Please try again.");
       }
+    } catch (err) {
+      console.error("Registration page error:", err);
+      setError("An unexpected error occurred during registration.");
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -236,9 +240,7 @@ const RegistrationPage = () => {
               <p className="text-silver-muted">
                 Already have an account?{" "}
                 <button
-                  onClick={() =>
-                    alert("In a real app, this would navigate to login")
-                  }
+                  onClick={() => navigate('/login')}
                   className="text-silver hover:text-white transition-colors duration-300 underline decoration-silver-muted hover:decoration-silver bg-transparent border-none cursor-pointer font-medium"
                 >
                   Sign in here
