@@ -1,11 +1,12 @@
 import React from 'react';
 
-const StyleTab = ({ background, setBackground }) => {
+const StyleTab = ({ background, setBackground, timerFontSize, setTimerFontSize }) => {
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-slate-700 dark:text-white font-medium mb-2 text-sm">
-          Background
+    <div className="space-y-6"> {/* Increased spacing for new section */}
+      {/* Background Settings */}
+      <div className="p-4 border-b border-gray-700">
+        <label className="block text-sm font-medium text-gray-300 mb-2"> {/* Consistent label styling */}
+          Canvas Background
         </label>
         <div className="grid grid-cols-1 gap-2">
           <button
@@ -42,6 +43,23 @@ const StyleTab = ({ background, setBackground }) => {
             <span className="text-slate-700 dark:text-white text-xs">Transparent</span>
           </button>
         </div>
+      </div>
+
+      {/* Timer Font Size Setting */}
+      <div className="p-4 border-b border-gray-700">
+        <label htmlFor="timerFontSize" className="block text-sm font-medium text-gray-300 mb-1">
+          Timer Font Size: {timerFontSize}px
+        </label>
+        <input
+          type="range"
+          id="timerFontSize"
+          name="timerFontSize"
+          min="1"
+          max="100"
+          value={timerFontSize}
+          onChange={(e) => setTimerFontSize(Number(e.target.value))}
+          className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider accent-pink-500"
+        />
       </div>
     </div>
   );

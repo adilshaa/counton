@@ -19,6 +19,7 @@ const TimeCounterVideoApp = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [timerFontSize, setTimerFontSize] = useState(48); // Default to 48px (within 1-100px range)
 
   // Styling options for the canvas content itself
   const [background, setBackground] = useState("black");
@@ -189,7 +190,7 @@ const TimeCounterVideoApp = () => {
               )
             : null;
         const progress = time / duration;
-        drawCounterWithStyle(ctx, currentTimeData, width, height, progress, previousTimeData);
+        drawCounterWithStyle(ctx, currentTimeData, width, height, progress, previousTimeData, timerFontSize);
       } else {
         const totalNumbers = Math.abs(endNumber - startNumber) + 1;
         const progress = Math.min(time / duration, 1);
@@ -210,16 +211,16 @@ const TimeCounterVideoApp = () => {
                   : Math.max(endNumber - Math.floor((previousTime.current / duration) * totalNumbers), startNumber)
               )
             : null;
-        drawNumberCounter(ctx, currentNumberData, width, height, progress, previousNumberData);
+        drawNumberCounter(ctx, currentNumberData, width, height, progress, previousNumberData, timerFontSize);
       }
       previousTime.current = time;
     },
-    [ duration, countMode, background, counterStyle, counterType, startNumber, endNumber, numberCountMode, appTheme ] // Added appTheme
+    [ duration, countMode, background, counterStyle, counterType, startNumber, endNumber, numberCountMode, appTheme, timerFontSize ]
   );
 
   // Extracted actual drawing logic to these functions for clarity
-  const drawCounterWithStyle = (ctx, timeData, width, height, progress, previousTimeData) => {
-    const fontSize = 180;
+  const drawCounterWithStyle = (ctx, timeData, width, height, progress, previousTimeData, dynamicFontSize) => {
+    const fontSize = dynamicFontSize;
     ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -369,8 +370,8 @@ const TimeCounterVideoApp = () => {
     animationPhase.current += 1;
   };
 
-  const drawNumberCounter = (ctx, numberData, width, height, progress, previousNumberData) => {
-    const fontSize = 240;
+  const drawNumberCounter = (ctx, numberData, width, height, progress, previousNumberData, dynamicFontSize) => {
+    const fontSize = dynamicFontSize;
     ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -478,6 +479,8 @@ const TimeCounterVideoApp = () => {
           setEndNumber={setEndNumber}
           numberCountMode={numberCountMode}
           setNumberCountMode={setNumberCountMode}
+          timerFontSize={timerFontSize}
+          setTimerFontSize={setTimerFontSize}
         />
         <div className="flex-1 h-full flex flex-col">
           <div className="absolute top-4 right-4 z-50">

@@ -29,6 +29,8 @@ const ControlsPanel = ({
   setBackground,
   counterStyle,
   setCounterStyle,
+  timerFontSize, // Add timerFontSize
+  setTimerFontSize, // Add setTimerFontSize
   // Add other props that might be identified as necessary later
 }) => {
   return (
@@ -111,7 +113,12 @@ const ControlsPanel = ({
 
           {/* Style Tab */}
           {activeTab === "style" && (
-            <StyleTab background={background} setBackground={setBackground} />
+            <StyleTab
+              background={background}
+              setBackground={setBackground}
+              timerFontSize={timerFontSize} // Pass timerFontSize
+              setTimerFontSize={setTimerFontSize} // Pass setTimerFontSize
+            />
           )}
 
           {/* Effects Tab */}
