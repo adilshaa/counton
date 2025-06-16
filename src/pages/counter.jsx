@@ -521,10 +521,20 @@ const TimeCounterVideoApp = () => {
       };
 
       mediaRecorderRef.current.onerror = (event) => {
-          console.error("MediaRecorder error:", event.error);
-          alert(`MediaRecorder error: ${event.error.name} - ${event.error.message}`);
-          // Consider stopping recording or handling error appropriately
-          stopRecording(); // Example: attempt to stop and cleanup
+        console.error("MediaRecorder error:", event.error);
+        alert(`MediaRecorder error: ${event.error.name} - ${event.error.message}`);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        setIsRecording(false);
+        setIsPaused(false);
+        setIsComplete(true); // Indicate process ended, possibly with error
+        setRecordedChunks([]); // Clear any potentially corrupted chunks
       };
 
       mediaRecorderRef.current.start();
@@ -564,9 +574,97 @@ const TimeCounterVideoApp = () => {
       }, 10); // Update interval to 10ms for smoother animation in drawTimer
   };
 
-  const pauseRecording = () => { /* ... same as before ... */ };
-  const stopRecording = () => { /* ... same as before ... */ };
-  const downloadVideo = () => { /* ... same as before ... */ };
+  const pauseRecording = () => {
+    if (!mediaRecorderRef.current || !isRecording) { // Ensure recording is active
+      console.warn("Pause/Resume called inappropriately.");
+      return;
+    }
+
+    setIsPaused(prevIsPaused => {
+      const newPausedState = !prevIsPaused;
+      if (newPausedState) {
+        // Pausing
+        if (mediaRecorderRef.current.state === "recording") {
+          try {
+            mediaRecorderRef.current.pause();
+          } catch (e) { console.error("Error pausing MediaRecorder:", e); }
+        }
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      } else {
+        // Resuming
+        if (mediaRecorderRef.current.state === "paused") {
+          try {
+            mediaRecorderRef.current.resume();
+          } catch (e) { console.error("Error resuming MediaRecorder:", e); }
+        }
+        startTimerInternal(); // Restart the timer interval
+      }
+      return newPausedState;
+    });
+  };
+
+  const stopRecording = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    // Check if mediaRecorder is available and in a state that can be stopped
+    if (mediaRecorderRef.current &&
+        (mediaRecorderRef.current.state === "recording" || mediaRecorderRef.current.state === "paused")) {
+      mediaRecorderRef.current.stop(); // This will trigger the onstop event
+    } else if (streamRef.current) {
+      // If recorder wasn't active but stream was, clean up stream
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+      // Manually set states if onstop isn't triggered because recorder wasn't recording
+      setIsRecording(false);
+      setIsPaused(false);
+      setIsComplete(true); // Consider if this should be true or false if no recording happened
+    } else {
+      // If nothing was really active, just ensure states are reset
+      setIsRecording(false);
+      setIsPaused(false);
+    }
+  };
+
+  const downloadVideo = () => {
+    if (recordedChunks.length === 0) {
+      console.warn("No video data recorded to download.");
+      alert("No video has been recorded or data is empty.");
+      return;
+    }
+    // Use the mimeType defined in startRecording, or a common default like "video/webm"
+    const options = { mimeType: "video/webm; codecs=vp9" }; // Match startRecording options
+    const blobMimeType = MediaRecorder.isTypeSupported(options.mimeType) ? options.mimeType : "video/webm";
+
+    const blob = new Blob(recordedChunks, { type: blobMimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style.display = "none";
+    a.href = url;
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.download = `timer_video_${timestamp}.webm`; // Dynamic filename
+
+    a.click();
+
+    // Cleanup: Revoke object URL and remove anchor after a short delay
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      if (a.parentNode) {
+        a.parentNode.removeChild(a);
+      }
+    }, 100);
+
+    // Optionally reset state for a new recording
+    // setRecordedChunks([]); // Keep chunks if user wants to download multiple times? Or clear.
+    // setIsComplete(false); // Allow re-recording or keep as complete?
+  };
+
   // The actual implementations of pauseRecording, stopRecording, downloadVideo
   // are lengthy and assumed to be correct as per previous versions. For brevity, they are not repeated here.
   // Make sure they are present in the actual file.
