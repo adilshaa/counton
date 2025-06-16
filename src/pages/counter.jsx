@@ -89,6 +89,28 @@ const TimeCounterVideoApp = () => {
     };
   };
 
+  const getSlideAndFadeInTransition = (currentText, previousText, progress, fontSize) => {
+    if (previousText === null || currentText === previousText) {
+      // No transition needed or first draw
+      return {
+        current: { text: currentText, offset: 0, alpha: 1 },
+        previous: null
+      };
+    }
+    return {
+      current: { // Incoming digit
+        text: currentText,
+        offset: (1 - progress) * (fontSize / 2), // Slides from bottom offset by half font size
+        alpha: progress // Fades in
+      },
+      previous: { // Outgoing digit
+        text: previousText,
+        offset: progress * (-fontSize / 2), // Slides to top offset by half font size
+        alpha: 1 - progress // Fades out
+      }
+    };
+  };
+
   const drawTextWithTransition = (
     ctx,
     textValue,
@@ -342,12 +364,12 @@ const TimeCounterVideoApp = () => {
       drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, null);
       ctx.fillText(":", colonX, centerY);
 
-      // Animate seconds with slide transition
-      const slideProgress = (animationPhase.current % 15) / 15;
-      const secTensTransition = getSlideTransition(secTens, prevSecTens, slideProgress, fontSize);
+      // Animate seconds with slide and fade transition
+      const swapProgress = (animationPhase.current % 30) / 30; // Changed from 15 to 30 frames
+      const secTensTransition = getSlideAndFadeInTransition(secTens, prevSecTens, swapProgress, fontSize);
       drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, secTensTransition);
 
-      const secOnesTransition = getSlideTransition(secOnes, prevSecOnes, slideProgress, fontSize);
+      const secOnesTransition = getSlideAndFadeInTransition(secOnes, prevSecOnes, swapProgress, fontSize);
       drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, secOnesTransition);
 
     } else { // Includes "fade" (handled by globalAlpha at start) and "none"
