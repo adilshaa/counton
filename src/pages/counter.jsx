@@ -491,7 +491,7 @@ const TimeCounterVideoApp = () => {
           timerFontSize={timerFontSize}
           setTimerFontSize={setTimerFontSize}
         />
-        <div className="flex-1 h-full flex flex-col">
+        <div className="flex-1 h-full flex flex-col overflow-hidden">
           <div className="absolute top-4 right-4 z-50">
             <AuthDetails />
           </div>
