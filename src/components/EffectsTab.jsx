@@ -22,6 +22,7 @@ const EffectsTab = ({ counterStyle, setCounterStyle }) => {
               name: "Slide",
               desc: "Top/Bottom reveal",
             },
+            { value: "swap", name: "Swap Seconds", desc: "Seconds slide, minutes static" },
             { value: "none", name: "None", desc: "Static display" },
           ].map((style) => (
             <button

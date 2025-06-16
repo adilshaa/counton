@@ -57,46 +57,65 @@ const TimeCounterVideoApp = () => {
 
   const getDigitTransition = (currentDigit, previousDigit, progress) => {
     if (previousDigit === null || currentDigit === previousDigit) {
-      return { digit: currentDigit, offset: 0, alpha: 1 };
+      // For no transition, current text is immediately visible
+      return { current: { text: currentDigit, offset: 0, alpha: 1 }, previous: null };
     }
 
     return {
-      current: { digit: currentDigit, offset: progress * 60, alpha: progress },
+      current: { text: currentDigit, offset: progress * 60, alpha: progress },
       previous: {
-        digit: previousDigit,
+        text: previousDigit,
         offset: (progress - 1) * 60,
         alpha: 1 - progress,
       },
     };
   };
 
-  const drawIndividualDigit = (
+  const getSlideTransition = (currentText, previousText, progress, fontSize) => {
+    if (previousText === null || currentText === previousText) {
+      return { current: { text: currentText, offset: 0, alpha: 1 }, previous: null };
+    }
+    return {
+      current: {
+        text: currentText,
+        offset: (1 - progress) * -fontSize, // Starts from -fontSize (top) and moves to 0
+        alpha: 1
+      },
+      previous: {
+        text: previousText,
+        offset: progress * fontSize, // Starts at 0 and moves to fontSize (bottom)
+        alpha: 1
+      }
+    };
+  };
+
+  const drawTextWithTransition = (
     ctx,
-    digit,
+    textValue,
     x,
     y,
-    fontSize,
+    fontSize, // Ensure fontSize is passed if needed by transitions, though not directly used by drawText itself if textValue is final.
     transition = null
   ) => {
-    ctx.save();
-
+    // Note: fontSize is not directly used in fillText here, but passed for transition calculations.
+    // The actual font size is set on ctx.font before calling this function.
     if (transition && transition.previous) {
-      // Draw previous digit
+      ctx.save();
       ctx.globalAlpha = transition.previous.alpha;
-      ctx.fillText(
-        transition.previous.digit,
-        x,
-        y + transition.previous.offset
-      );
-
-      // Draw current digit
-      ctx.globalAlpha = transition.current.alpha;
-      ctx.fillText(transition.current.digit, x, y + transition.current.offset);
-    } else {
-      ctx.fillText(digit, x, y);
+      ctx.fillText(transition.previous.text, x, y + transition.previous.offset);
+      ctx.restore();
     }
 
-    ctx.restore();
+    if (transition && transition.current) {
+      ctx.save();
+      ctx.globalAlpha = transition.current.alpha;
+      ctx.fillText(transition.current.text, x, y + transition.current.offset);
+      ctx.restore();
+    } else if (!transition) {
+      // No transition object, draw textValue directly.
+      // Assumes ctx.globalAlpha has been set appropriately by the calling effect (e.g., fade).
+      ctx.fillText(textValue, x, y);
+    }
   };
 
   const drawCounterWithStyle = (
@@ -162,7 +181,7 @@ const TimeCounterVideoApp = () => {
         revealHeight
       );
       ctx.clip();
-      drawIndividualDigit(ctx, secTens, secTensX, centerY, fontSize);
+      drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, null);
       ctx.restore();
 
       ctx.save();
@@ -174,12 +193,12 @@ const TimeCounterVideoApp = () => {
         revealHeight
       );
       ctx.clip();
-      drawIndividualDigit(ctx, secOnes, secOnesX, centerY, fontSize);
+      drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, null);
       ctx.restore();
 
       // Draw minutes normally
-      drawIndividualDigit(ctx, minTens, minTensX, centerY, fontSize);
-      drawIndividualDigit(ctx, minOnes, minOnesX, centerY, fontSize);
+      drawTextWithTransition(ctx, minTens, minTensX, centerY, fontSize, null);
+      drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, null);
       ctx.fillText(":", colonX, centerY);
 
       ctx.restore();
@@ -194,16 +213,9 @@ const TimeCounterVideoApp = () => {
         prevMinTens,
         transitionProgress
       );
-      drawIndividualDigit(
-        ctx,
-        minTens,
-        minTensX,
-        centerY,
-        fontSize,
-        transition
-      );
-    } else {
-      drawIndividualDigit(ctx, minTens, minTensX, centerY, fontSize);
+      drawTextWithTransition(ctx, minTens, minTensX, centerY, fontSize, transition);
+    } else if (counterStyle !== "slide") { // For slide, handled below
+      drawTextWithTransition(ctx, minTens, minTensX, centerY, fontSize, null);
     }
 
     if (counterStyle === "scroll" && prevMinOnes && minOnes !== prevMinOnes) {
@@ -212,20 +224,15 @@ const TimeCounterVideoApp = () => {
         prevMinOnes,
         transitionProgress
       );
-      drawIndividualDigit(
-        ctx,
-        minOnes,
-        minOnesX,
-        centerY,
-        fontSize,
-        transition
-      );
-    } else {
-      drawIndividualDigit(ctx, minOnes, minOnesX, centerY, fontSize);
+      drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, transition);
+    } else if (counterStyle !== "slide") { // For slide, handled below
+      drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, null);
     }
 
-    // Draw colon
-    ctx.fillText(":", colonX, centerY);
+    if (counterStyle !== "slide") { // Colon for non-slide effects
+        ctx.fillText(":", colonX, centerY);
+    }
+
 
     // Draw seconds with individual digit animation
     if (counterStyle === "scroll") {
@@ -236,16 +243,9 @@ const TimeCounterVideoApp = () => {
           prevSecTens,
           transitionProgress
         );
-        drawIndividualDigit(
-          ctx,
-          secTens,
-          secTensX,
-          centerY,
-          fontSize,
-          transition
-        );
+        drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, transition);
       } else {
-        drawIndividualDigit(ctx, secTens, secTensX, centerY, fontSize);
+        drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, null);
       }
 
       // Animate ones digit of seconds (this changes most frequently)
@@ -255,16 +255,9 @@ const TimeCounterVideoApp = () => {
           prevSecOnes,
           transitionProgress
         );
-        drawIndividualDigit(
-          ctx,
-          secOnes,
-          secOnesX,
-          centerY,
-          fontSize,
-          transition
-        );
+        drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, transition);
       } else {
-        drawIndividualDigit(ctx, secOnes, secOnesX, centerY, fontSize);
+        drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, null);
       }
     } else if (counterStyle === "roll") {
       // Rolling effect for individual digits
@@ -286,7 +279,7 @@ const TimeCounterVideoApp = () => {
         ctx.fillText(secTens, 0, 0);
         ctx.restore();
       } else {
-        drawIndividualDigit(ctx, secTens, secTensX, centerY, fontSize);
+        drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, null);
       }
 
       // Roll ones digit
@@ -305,7 +298,7 @@ const TimeCounterVideoApp = () => {
         ctx.fillText(secOnes, 0, 0);
         ctx.restore();
       } else {
-        drawIndividualDigit(ctx, secOnes, secOnesX, centerY, fontSize);
+        drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, null);
       }
     } else if (counterStyle === "fold") {
       // Folding effect for individual digits
@@ -315,61 +308,60 @@ const TimeCounterVideoApp = () => {
       ctx.save();
       ctx.translate(secTensX, centerY);
       ctx.scale(scale, 1);
-      ctx.fillText(secTens, 0, 0);
+      drawTextWithTransition(ctx, secTens, 0, 0, fontSize, null); // Draw at (0,0) due to translate
       ctx.restore();
 
       ctx.save();
       ctx.translate(secOnesX, centerY);
       ctx.scale(scale, 1);
-      ctx.fillText(secOnes, 0, 0);
+      drawTextWithTransition(ctx, secOnes, 0, 0, fontSize, null); // Draw at (0,0) due to translate
       ctx.restore();
     } else if (counterStyle === "slide") {
-      // Slide effect with top/bottom reveal animation
-      const slidePhase = (animationPhase.current % 60) / 60;
-      const clipHeight = Math.sin(slidePhase * Math.PI * 2) * 30 + 30;
+      const slideProgress = (animationPhase.current % 15) / 15;
 
-      // Create clipping mask for seconds digits
-      ctx.save();
+      const minTensTransition = getSlideTransition(minTens, prevMinTens, slideProgress, fontSize);
+      drawTextWithTransition(ctx, minTens, minTensX, centerY, fontSize, minTensTransition);
 
-      // Clip from top and bottom
-      ctx.beginPath();
-      ctx.rect(
-        secTensX - digitWidth / 2,
-        centerY - clipHeight / 2,
-        digitWidth,
-        clipHeight
-      );
-      ctx.clip();
-      drawIndividualDigit(ctx, secTens, secTensX, centerY, fontSize);
-      ctx.restore();
+      const minOnesTransition = getSlideTransition(minOnes, prevMinOnes, slideProgress, fontSize);
+      drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, minOnesTransition);
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(
-        secOnesX - digitWidth / 2,
-        centerY - clipHeight / 2,
-        digitWidth,
-        clipHeight
-      );
-      ctx.clip();
-      drawIndividualDigit(ctx, secOnes, secOnesX, centerY, fontSize);
-      ctx.restore();
+      // For slide, colon might also slide or just appear. Simple fillText for now.
+      // To make it slide with digits, it would need its own transition.
+      ctx.fillText(":", colonX, centerY);
 
-      // Add subtle glow effect
-      ctx.save();
-      ctx.shadowColor = background === "white" ? "#000000" : "#ffffff";
-      ctx.shadowBlur = 10;
-      ctx.globalAlpha = 0.3;
-      drawIndividualDigit(ctx, secTens, secTensX, centerY, fontSize);
-      drawIndividualDigit(ctx, secOnes, secOnesX, centerY, fontSize);
-      ctx.restore();
-    } else {
-      // Default - draw normally
-      drawIndividualDigit(ctx, secTens, secTensX, centerY, fontSize);
-      drawIndividualDigit(ctx, secOnes, secOnesX, centerY, fontSize);
+
+      const secTensTransition = getSlideTransition(secTens, prevSecTens, slideProgress, fontSize);
+      drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, secTensTransition);
+
+      const secOnesTransition = getSlideTransition(secOnes, prevSecOnes, slideProgress, fontSize);
+      drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, secOnesTransition);
+
+    } else if (counterStyle === "swap") {
+      // Draw minutes statically
+      drawTextWithTransition(ctx, minTens, minTensX, centerY, fontSize, null);
+      drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, null);
+      ctx.fillText(":", colonX, centerY);
+
+      // Animate seconds with slide transition
+      const slideProgress = (animationPhase.current % 15) / 15;
+      const secTensTransition = getSlideTransition(secTens, prevSecTens, slideProgress, fontSize);
+      drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, secTensTransition);
+
+      const secOnesTransition = getSlideTransition(secOnes, prevSecOnes, slideProgress, fontSize);
+      drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, secOnesTransition);
+
+    } else { // Includes "fade" (handled by globalAlpha at start) and "none"
+      drawTextWithTransition(ctx, minTens, minTensX, centerY, fontSize, null);
+      drawTextWithTransition(ctx, minOnes, minOnesX, centerY, fontSize, null);
+      ctx.fillText(":", colonX, centerY);
+      drawTextWithTransition(ctx, secTens, secTensX, centerY, fontSize, null);
+      drawTextWithTransition(ctx, secOnes, secOnesX, centerY, fontSize, null);
     }
 
-    ctx.restore();
+    if (counterStyle === "fade") { // Reset alpha if set by fade
+        ctx.globalAlpha = 1.0;
+    }
+    ctx.restore(); // This is the main restore for drawCounterWithStyle
     animationPhase.current += 1;
   };
 
@@ -399,29 +391,16 @@ const TimeCounterVideoApp = () => {
     if (counterStyle === "fade") {
       const alpha = 0.3 + (Math.sin(animationPhase.current * 0.1) + 1) * 0.35;
       ctx.globalAlpha = alpha;
-      ctx.fillText(currentNumber, centerX, centerY);
+      drawTextWithTransition(ctx, currentNumber, centerX, centerY, fontSize, null);
+      ctx.globalAlpha = 1.0; // Reset alpha
     } else if (
       counterStyle === "scroll" &&
       previousNumber &&
       currentNumber !== previousNumber
     ) {
-      const transitionProgress = (animationPhase.current % 30) / 30;
-
-      // Draw previous number sliding up
-      ctx.globalAlpha = 1 - transitionProgress;
-      ctx.fillText(
-        previousNumber,
-        centerX,
-        centerY - transitionProgress * fontSize
-      );
-
-      // Draw current number sliding in
-      ctx.globalAlpha = transitionProgress;
-      ctx.fillText(
-        currentNumber,
-        centerX,
-        centerY + (1 - transitionProgress) * fontSize
-      );
+      const transitionProgress = (animationPhase.current % 30) / 30; // scroll uses 30 frames
+      const transition = getDigitTransition(currentNumber, previousNumber, transitionProgress);
+      drawTextWithTransition(ctx, currentNumber, centerX, centerY, fontSize, transition);
     } else if (
       counterStyle === "roll" &&
       previousNumber &&
@@ -434,14 +413,14 @@ const TimeCounterVideoApp = () => {
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.scale(1, scaleY);
-        ctx.fillText(previousNumber, 0, 0);
+        drawTextWithTransition(ctx, previousNumber, 0, 0, fontSize, null);
         ctx.restore();
       } else {
         const scaleY = (rollPhase - 0.5) * 2;
         ctx.save();
         ctx.translate(centerX, centerY);
         ctx.scale(1, scaleY);
-        ctx.fillText(currentNumber, 0, 0);
+        drawTextWithTransition(ctx, currentNumber, 0, 0, fontSize, null);
         ctx.restore();
       }
     } else if (counterStyle === "fold") {
@@ -450,7 +429,7 @@ const TimeCounterVideoApp = () => {
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.scale(scale, 1);
-      ctx.fillText(currentNumber, 0, 0);
+      drawTextWithTransition(ctx, currentNumber, 0, 0, fontSize, null);
       ctx.restore();
 
       // Add glow effect
@@ -458,38 +437,18 @@ const TimeCounterVideoApp = () => {
       ctx.shadowColor = background === "white" ? "#000000" : "#ffffff";
       ctx.shadowBlur = 20;
       ctx.globalAlpha = 0.3;
-      ctx.fillText(currentNumber, centerX, centerY);
+      drawTextWithTransition(ctx, currentNumber, centerX, centerY, fontSize, null); // Draw with glow
       ctx.restore();
     } else if (counterStyle === "slide") {
-      // Slide effect with clipping
-      const slidePhase = (animationPhase.current % 60) / 60;
-      const clipHeight = Math.sin(slidePhase * Math.PI * 2) * 60 + 60;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(
-        centerX - fontSize / 2,
-        centerY - clipHeight / 2,
-        fontSize,
-        clipHeight
-      );
-      ctx.clip();
-      ctx.fillText(currentNumber, centerX, centerY);
-      ctx.restore();
-
-      // Add glow effect
-      ctx.save();
-      ctx.shadowColor = background === "white" ? "#000000" : "#ffffff";
-      ctx.shadowBlur = 15;
-      ctx.globalAlpha = 0.2;
-      ctx.fillText(currentNumber, centerX, centerY);
-      ctx.restore();
+      const slideProgress = (animationPhase.current % 15) / 15; // slide uses 15 frames
+      const transition = getSlideTransition(currentNumber, previousNumber, slideProgress, fontSize);
+      drawTextWithTransition(ctx, currentNumber, centerX, centerY, fontSize, transition);
     } else {
-      // Default - draw normally
-      ctx.fillText(currentNumber, centerX, centerY);
+      // Default - draw normally (includes "none")
+      drawTextWithTransition(ctx, currentNumber, centerX, centerY, fontSize, null);
     }
 
-    ctx.restore();
+    ctx.restore(); // This is the main restore for drawNumberCounter
     animationPhase.current += 1;
   };
 
