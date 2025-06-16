@@ -68,8 +68,7 @@ axiosInstance.interceptors.response.use(
       try {
         console.log('Attempting to refresh token...');
         const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {}, {
-          // Browser will send HttpOnly cookie automatically.
-          // No specific withCredentials needed for standard cookie behavior on same-origin or properly configured CORS.
+          withCredentials: true // Ensures HttpOnly cookie is sent cross-origin
         });
 
         if (refreshResponse.status === 200 && refreshResponse.data.accessToken) {
