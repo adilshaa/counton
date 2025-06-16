@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,9 +22,7 @@ const LoginPage = () => {
     // Simulate login process
     setTimeout(() => {
       if (email && password) {
-        alert(
-          "Login successful! In a real app, this would redirect to dashboard."
-        );
+        navigate('/');
         setEmail("");
         setPassword("");
       } else {

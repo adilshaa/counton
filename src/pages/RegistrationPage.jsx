@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const RegistrationPage = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,9 +23,7 @@ const RegistrationPage = () => {
     // Simulate registration process
     setTimeout(() => {
       if (email && password && name) {
-        alert(
-          "Registration successful! In a real app, this would redirect to login."
-        );
+        navigate('/login');
         setName("");
         setEmail("");
         setPassword("");
