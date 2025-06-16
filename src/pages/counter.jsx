@@ -1,14 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import {
-  Play,
-  Pause,
-  Square,
-  Download,
-  Settings,
-  Palette,
-  Film,
-  Zap,
-} from "lucide-react";
+import { Film } from "lucide-react"; // Only Film is potentially used if any top-level logic needs it. Others are in child components.
+import ControlsPanel from '../components/ControlsPanel';
+import VideoPreview from '../components/VideoPreview';
+import ActionButtons from '../components/ActionButtons';
 
 const TimeCounterVideoApp = () => {
   const [duration, setDuration] = useState(60);
@@ -790,465 +784,52 @@ const TimeCounterVideoApp = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black p-0 transition-colors duration-300">
       <div className="w-full h-screen flex">
-        {/* Left Sidebar - Controls Panel */}
-        <div className="w-80 h-full bg-gray-900/30 backdrop-blur-xl border-r border-gray-700/20 overflow-y-auto">
-          <div className="p-6 space-y-6">
-            {/* Header in Sidebar */}
-            <div className="text-left">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-                Timer Studio
-              </h1>
-              <p className="text-gray-400 text-sm">
-                Create professional timer videos
-              </p>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="bg-gray-800/30 backdrop-blur-xl rounded-xl p-1 border border-gray-700/20">
-              <div className="flex flex-col space-y-1">
-                <button
-                  onClick={() => setActiveTab("settings")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                    activeTab === "settings"
-                      ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-lg backdrop-blur-sm"
-                      : "text-gray-400 hover:text-white hover:bg-gray-700/30"
-                  }`}
-                >
-                  <Settings size={16} />
-                  Settings
-                </button>
-                <button
-                  onClick={() => setActiveTab("style")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                    activeTab === "style"
-                      ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-lg backdrop-blur-sm"
-                      : "text-gray-400 hover:text-white hover:bg-gray-700/30"
-                  }`}
-                >
-                  <Palette size={16} />
-                  Style
-                </button>
-                <button
-                  onClick={() => setActiveTab("effects")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                    activeTab === "effects"
-                      ? "bg-pink-500/20 text-pink-400 border border-pink-500/30 shadow-lg backdrop-blur-sm"
-                      : "text-gray-400 hover:text-white hover:bg-gray-700/30"
-                  }`}
-                >
-                  <Zap size={16} />
-                  Effects
-                </button>
-              </div>
-            </div>
-
-            {/* Settings Content */}
-            <div className="bg-gray-800/20 backdrop-blur-xl rounded-xl p-4 border border-gray-700/20">
-              {/* Settings Tab */}
-              {activeTab === "settings" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-white font-medium mb-2 text-sm">
-                      Duration
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range"
-                        min="5"
-                        max="300"
-                        value={duration}
-                        onChange={(e) => setDuration(parseInt(e.target.value))}
-                        className="flex-1 h-2 bg-gray-700/50 backdrop-blur-sm rounded-lg appearance-none cursor-pointer slider"
-                      />
-                      <span className="text-blue-400 font-bold text-sm min-w-[50px] bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">
-                        {duration}s
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-white font-medium mb-2 text-sm">
-                      Count Mode
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      <button
-                        onClick={() => setCountMode("countdown")}
-                        className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
-                          countMode === "countdown"
-                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                            : "bg-gray-700/30 text-gray-300 hover:bg-gray-600/30 border border-gray-600/30"
-                        }`}
-                      >
-                        Countdown
-                      </button>
-                      <button
-                        onClick={() => setCountMode("countup")}
-                        className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
-                          countMode === "countup"
-                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                            : "bg-gray-700/30 text-gray-300 hover:bg-gray-600/30 border border-gray-600/30"
-                        }`}
-                      >
-                        Count Up
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-white font-medium mb-2 text-sm">
-                      Counter Type
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      <button
-                        onClick={() => setCounterType("time")}
-                        className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
-                          counterType === "time"
-                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                            : "bg-gray-700/30 text-gray-300 hover:bg-gray-600/30 border border-gray-600/30"
-                        }`}
-                      >
-                        Time Counter
-                      </button>
-                      <button
-                        onClick={() => setCounterType("number")}
-                        className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
-                          counterType === "number"
-                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                            : "bg-gray-700/30 text-gray-300 hover:bg-gray-600/30 border border-gray-600/30"
-                        }`}
-                      >
-                        Number Counter
-                      </button>
-                    </div>
-                  </div>
-                  {counterType === "number" && (
-                    <div className="space-y-4 p-3 bg-blue-500/5 rounded-lg border border-blue-500/20">
-                      <div>
-                        <label className="block text-white font-medium mb-2 text-sm">
-                          Number Range
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="block text-gray-400 text-xs mb-1">
-                              From
-                            </label>
-                            <input
-                              type="number"
-                              value={startNumber}
-                              onChange={(e) =>
-                                setStartNumber(parseInt(e.target.value) || 0)
-                              }
-                              className="w-full p-2 bg-gray-700/30 backdrop-blur-sm text-white rounded-lg border border-gray-600/30 focus:border-blue-500/50 focus:outline-none text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-gray-400 text-xs mb-1">
-                              To
-                            </label>
-                            <input
-                              type="number"
-                              value={endNumber}
-                              onChange={(e) =>
-                                setEndNumber(parseInt(e.target.value) || 100)
-                              }
-                              className="w-full p-2 bg-gray-700/30 backdrop-blur-sm text-white rounded-lg border border-gray-600/30 focus:border-blue-500/50 focus:outline-none text-sm"
-                            />
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          Total: {Math.abs(endNumber - startNumber) + 1} numbers
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-white font-medium mb-2 text-sm">
-                          Number Count Mode
-                        </label>
-                        <div className="grid grid-cols-1 gap-2">
-                          <button
-                            onClick={() => setNumberCountMode("countup")}
-                            className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
-                              numberCountMode === "countup"
-                                ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                : "bg-gray-700/30 text-gray-300 hover:bg-gray-600/30 border border-gray-600/30"
-                            }`}
-                          >
-                            Count Up ({startNumber} → {endNumber})
-                          </button>
-                          <button
-                            onClick={() => setNumberCountMode("countdown")}
-                            className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
-                              numberCountMode === "countdown"
-                                ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                                : "bg-gray-700/30 text-gray-300 hover:bg-gray-600/30 border border-gray-600/30"
-                            }`}
-                          >
-                            Count Down ({endNumber} → {startNumber})
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <div>
-                    <label className="block text-white font-medium mb-2 text-sm">
-                      Speed
-                    </label>
-                    <select
-                      value={speed}
-                      onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                      className="w-full p-2 bg-gray-700/30 backdrop-blur-sm text-white rounded-lg border border-gray-600/30 focus:border-blue-500/50 focus:outline-none text-sm"
-                    >
-                      <option value="0.5">0.5x (Slow)</option>
-                      <option value="1">1x (Normal)</option>
-                      <option value="1.5">1.5x (Fast)</option>
-                      <option value="2">2x (Very Fast)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="flex items-center gap-2 text-white font-medium mb-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={useCustomSpeed}
-                        onChange={(e) => setUseCustomSpeed(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-700/50 border-gray-600/50 rounded focus:ring-blue-500"
-                      />
-                      Custom Speed
-                    </label>
-                    {useCustomSpeed && (
-                      <div className="space-y-2">
-                        <input
-                          type="number"
-                          min="0.01"
-                          step="0.01"
-                          value={customSpeed}
-                          onChange={(e) => {
-                            const value = parseFloat(e.target.value);
-                            if (!isNaN(value) && value > 0) {
-                              setCustomSpeed(value);
-                            }
-                          }}
-                          placeholder="Enter speed (e.g., 0.5, 1.5, 10, 100)"
-                          className="w-full p-2 bg-gray-700/30 backdrop-blur-sm text-white rounded-lg border border-gray-600/30 focus:border-blue-500/50 focus:outline-none text-sm"
-                        />
-                        <div className="text-xs text-gray-400">
-                          Current:{" "}
-                          <span className="text-blue-400 font-medium">
-                            {customSpeed}x
-                          </span>
-                          {customSpeed < 1 && " (Slow motion)"}
-                          {customSpeed > 5 && " (Ultra fast)"}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Style Tab */}
-              {activeTab === "style" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-white font-medium mb-2 text-sm">
-                      Background
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      <button
-                        onClick={() => setBackground("black")}
-                        className={`p-3 rounded-lg border transition-all backdrop-blur-sm ${
-                          background === "black"
-                            ? "border-blue-500/50 bg-blue-500/10"
-                            : "border-gray-600/30 bg-gray-700/20 hover:border-gray-500/50"
-                        }`}
-                      >
-                        <div className="w-full h-6 bg-black rounded border border-gray-600/30 mb-1"></div>
-                        <span className="text-white text-xs">Black</span>
-                      </button>
-                      <button
-                        onClick={() => setBackground("white")}
-                        className={`p-3 rounded-lg border transition-all backdrop-blur-sm ${
-                          background === "white"
-                            ? "border-blue-500/50 bg-blue-500/10"
-                            : "border-gray-600/30 bg-gray-700/20 hover:border-gray-500/50"
-                        }`}
-                      >
-                        <div className="w-full h-6 bg-white rounded border border-gray-300/50 mb-1"></div>
-                        <span className="text-white text-xs">White</span>
-                      </button>
-                      <button
-                        onClick={() => setBackground("transparent")}
-                        className={`p-3 rounded-lg border transition-all backdrop-blur-sm ${
-                          background === "transparent"
-                            ? "border-blue-500/50 bg-blue-500/10"
-                            : "border-gray-600/30 bg-gray-700/20 hover:border-gray-500/50"
-                        }`}
-                      >
-                        <div className="w-full h-6 bg-transparent rounded border border-gray-400/30 bg-checkered mb-1"></div>
-                        <span className="text-white text-xs">Transparent</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Effects Tab */}
-              {activeTab === "effects" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-white font-medium mb-2 text-sm">
-                      Counter Animation
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {[
-                        { value: "fade", name: "Fade", desc: "Smooth fading" },
-                        {
-                          value: "scroll",
-                          name: "Scroll",
-                          desc: "Vertical slide",
-                        },
-                        { value: "fold", name: "Fold", desc: "Flip animation" },
-                        { value: "roll", name: "Roll", desc: "Odometer style" },
-                        {
-                          value: "slide",
-                          name: "Slide",
-                          desc: "Top/Bottom reveal",
-                        },
-                        { value: "none", name: "None", desc: "Static display" },
-                      ].map((style) => (
-                        <button
-                          key={style.value}
-                          onClick={() => setCounterStyle(style.value)}
-                          className={`p-2 rounded-lg border text-left transition-all backdrop-blur-sm ${
-                            counterStyle === style.value
-                              ? "border-pink-500/50 bg-pink-500/10"
-                              : "border-gray-600/30 bg-gray-700/20 hover:border-gray-500/50"
-                          }`}
-                        >
-                          <div className="text-white font-medium text-xs">
-                            {style.name}
-                          </div>
-                          <div className="text-gray-400 text-xs">
-                            {style.desc}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ControlsPanel
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          duration={duration}
+          setDuration={setDuration}
+          countMode={countMode}
+          setCountMode={setCountMode}
+          speed={speed}
+          setSpeed={setSpeed}
+          customSpeed={customSpeed}
+          setCustomSpeed={setCustomSpeed}
+          useCustomSpeed={useCustomSpeed}
+          setUseCustomSpeed={setUseCustomSpeed}
+          background={background}
+          setBackground={setBackground}
+          counterStyle={counterStyle}
+          setCounterStyle={setCounterStyle}
+          counterType={counterType}
+          setCounterType={setCounterType}
+          startNumber={startNumber}
+          setStartNumber={setStartNumber}
+          endNumber={endNumber}
+          setEndNumber={setEndNumber}
+          numberCountMode={numberCountMode}
+          setNumberCountMode={setNumberCountMode}
+        />
 
         {/* Right Side - Video Section */}
         <div className="flex-1 h-full flex flex-col">
-          {/* Video Preview */}
-          <div className="flex-1 p-6 flex flex-col">
-            <div className="flex-1 bg-gray-800/20 backdrop-blur-xl rounded-2xl p-6 border border-gray-700/20">
-              <div className="mb-4">
-                <h2 className="text-xl font-bold text-white mb-1">
-                  Video Preview
-                </h2>
-                <p className="text-gray-400 text-sm">
-                  Live preview of your timer video
-                </p>
-              </div>
+          <VideoPreview
+            canvasRef={canvasRef}
+            isRecording={isRecording}
+            isPaused={isPaused}
+            currentTime={currentTime}
+            duration={duration}
+          />
 
-              <div className="relative flex-1 flex items-center justify-center">
-                <canvas
-                  ref={canvasRef}
-                  width={800}
-                  height={600}
-                  className="max-w-full max-h-full border border-gray-600/30 rounded-xl shadow-2xl bg-gray-900/50 backdrop-blur-sm"
-                  style={{ maxWidth: "100%", height: "auto" }}
-                />
-
-                {/* Recording Overlay */}
-                {isRecording && (
-                  <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-500/20 backdrop-blur-xl border border-red-500/30 px-3 py-2 rounded-lg">
-                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                    <span className="text-red-400 font-medium text-sm">
-                      {isPaused ? "PAUSED" : "RECORDING"}
-                    </span>
-                  </div>
-                )}
-
-                {/* Progress Bar */}
-                {isRecording && (
-                  <div className="absolute bottom-4 left-4 right-4 bg-black/30 backdrop-blur-xl border border-gray-700/30 rounded-lg p-3">
-                    <div className="flex justify-between text-white text-sm mb-2">
-                      <span>{Math.floor(currentTime)}s</span>
-                      <span>{duration}s</span>
-                    </div>
-                    <div className="w-full bg-gray-700/50 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.min(
-                            (currentTime / duration) * 100,
-                            100
-                          )}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Control Bar */}
-          <div className="p-6 pt-0">
-            <div className="bg-gray-800/20 backdrop-blur-xl rounded-2xl p-4 border border-gray-700/20">
-              <div className="flex flex-wrap gap-3 justify-center">
-                <button
-                  onClick={startRecording}
-                  disabled={isRecording}
-                  className="flex items-center gap-2 bg-gradient-to-r from-red-500/20 to-red-600/20 hover:from-red-500/30 hover:to-red-600/30 disabled:from-gray-600/20 disabled:to-gray-700/20 disabled:cursor-not-allowed text-red-400 disabled:text-gray-500 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-red-500/30 disabled:border-gray-600/30 backdrop-blur-sm"
-                >
-                  <Play size={16} />
-                  Start
-                </button>
-
-                <button
-                  onClick={pauseRecording}
-                  disabled={!isRecording}
-                  className="flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 disabled:from-gray-600/20 disabled:to-gray-700/20 disabled:cursor-not-allowed text-yellow-400 disabled:text-gray-500 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-yellow-500/30 disabled:border-gray-600/30 backdrop-blur-sm"
-                >
-                  <Pause size={16} />
-                  {isPaused ? "Resume" : "Pause"}
-                </button>
-
-                <button
-                  onClick={stopRecording}
-                  disabled={!isRecording}
-                  className="flex items-center gap-2 bg-gradient-to-r from-gray-500/20 to-gray-600/20 hover:from-gray-500/30 hover:to-gray-600/30 disabled:from-gray-600/20 disabled:to-gray-700/20 disabled:cursor-not-allowed text-gray-400 disabled:text-gray-500 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-gray-500/30 disabled:border-gray-600/30 backdrop-blur-sm"
-                >
-                  <Square size={16} />
-                  Stop
-                </button>
-
-                <button
-                  onClick={downloadVideo}
-                  disabled={!isComplete}
-                  className="flex items-center gap-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 disabled:from-gray-600/20 disabled:to-gray-700/20 disabled:cursor-not-allowed text-green-400 disabled:text-gray-500 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-green-500/30 disabled:border-gray-600/30 backdrop-blur-sm"
-                >
-                  <Download size={16} />
-                  Download
-                </button>
-              </div>
-
-              {isComplete && (
-                <div className="mt-3 text-center">
-                  <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 text-green-400 px-3 py-1 rounded-lg backdrop-blur-sm">
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                    <span className="text-sm">
-                      Recording complete! Ready to download.
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ActionButtons
+            isRecording={isRecording}
+            isPaused={isPaused}
+            isComplete={isComplete}
+            startRecording={startRecording}
+            pauseRecording={pauseRecording}
+            stopRecording={stopRecording}
+            downloadVideo={downloadVideo}
+          />
         </div>
       </div>
 
