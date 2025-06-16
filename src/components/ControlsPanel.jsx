@@ -32,27 +32,27 @@ const ControlsPanel = ({
   // Add other props that might be identified as necessary later
 }) => {
   return (
-    <div className="w-80 h-full bg-gray-900/30 backdrop-blur-xl border-r border-gray-700/20 overflow-y-auto">
+    <div className="w-80 h-full bg-white/70 dark:bg-gray-900/30 backdrop-blur-xl border-r border-gray-200/80 dark:border-gray-700/20 overflow-y-auto transition-colors duration-300">
       <div className="p-6 space-y-6">
         {/* Header in Sidebar */}
         <div className="text-left">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
             Timer Studio
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-slate-600 dark:text-gray-400 text-sm">
             Create professional timer videos
           </p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-gray-800/30 backdrop-blur-xl rounded-xl p-1 border border-gray-700/20">
+        <div className="bg-gray-200/50 dark:bg-gray-800/30 backdrop-blur-xl rounded-xl p-1 border border-gray-300/70 dark:border-gray-700/20 transition-colors duration-300">
           <div className="flex flex-col space-y-1">
             <button
               onClick={() => setActiveTab("settings")}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
                 activeTab === "settings"
-                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-lg backdrop-blur-sm"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700/30"
+                  ? "bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30 shadow-lg backdrop-blur-sm"
+                  : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
               }`}
             >
               <Settings size={16} />
@@ -62,8 +62,8 @@ const ControlsPanel = ({
               onClick={() => setActiveTab("style")}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
                 activeTab === "style"
-                  ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-lg backdrop-blur-sm"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700/30"
+                  ? "bg-purple-100 text-purple-700 border border-purple-300 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30 shadow-lg backdrop-blur-sm"
+                  : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
               }`}
             >
               <Palette size={16} />
@@ -73,8 +73,8 @@ const ControlsPanel = ({
               onClick={() => setActiveTab("effects")}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
                 activeTab === "effects"
-                  ? "bg-pink-500/20 text-pink-400 border border-pink-500/30 shadow-lg backdrop-blur-sm"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700/30"
+                  ? "bg-pink-100 text-pink-700 border border-pink-300 dark:bg-pink-500/20 dark:text-pink-400 dark:border-pink-500/30 shadow-lg backdrop-blur-sm"
+                  : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
               }`}
             >
               <Zap size={16} />
@@ -83,8 +83,8 @@ const ControlsPanel = ({
           </div>
         </div>
 
-        {/* Settings Content */}
-        <div className="bg-gray-800/20 backdrop-blur-xl rounded-xl p-4 border border-gray-700/20">
+        {/* Settings Content Card */}
+        <div className="bg-gray-200/40 dark:bg-gray-800/20 backdrop-blur-xl rounded-xl p-4 border border-gray-300/60 dark:border-gray-700/20 transition-colors duration-300">
           {/* Settings Tab */}
           {activeTab === "settings" && (
             <SettingsTab
