@@ -33,19 +33,15 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white overflow-hidden relative">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(148,163,184,0.12),transparent)] animate-pulse"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(148,163,184,0.08),transparent)] animate-pulse delay-1000"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_80%,rgba(148,163,184,0.06),transparent)] animate-pulse delay-2000"></div>
+    <div className="min-h-screen bg-black text-white overflow-hidden relative">
+      {/* Subtle Wave Animation Background */}
+      <div className="absolute inset-0">
+        <div className="wave-container">
+          <div className="wave wave1"></div>
+          <div className="wave wave2"></div>
+          <div className="wave wave3"></div>
+        </div>
       </div>
-
-      {/* Floating Geometric Shapes */}
-      <div className="absolute top-20 left-16 w-20 h-20 border border-slate-400/20 rotate-45 animate-float-geometric"></div>
-      <div className="absolute top-40 right-24 w-16 h-16 border border-slate-300/15 rounded-full animate-float-circle"></div>
-      <div className="absolute bottom-32 left-32 w-24 h-24 border border-slate-500/10 rotate-12 animate-float-square"></div>
-      <div className="absolute bottom-20 right-20 w-32 h-1 bg-gradient-to-r from-transparent via-slate-400/20 to-transparent animate-float-line"></div>
 
       {/* Main Container */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
@@ -61,21 +57,20 @@ const LoginPage = () => {
                     <div className="clock-hand minute-hand"></div>
                     <div className="clock-center"></div>
                   </div>
-                  <div className="logo-glow"></div>
                 </div>
               </div>
             </div>
-            <h1 className="text-5xl font-black bg-gradient-to-r from-slate-200 via-slate-300 to-slate-400 bg-clip-text text-transparent mb-3">
+            <h1 className="text-5xl font-black bg-gradient-to-r from-silver-light via-silver to-silver-dark bg-clip-text text-transparent mb-3">
               Welcome Back
             </h1>
-            <p className="text-lg text-slate-400">
+            <p className="text-lg text-silver-muted">
               Sign in to continue your journey with Timer Studio
             </p>
           </div>
 
           {/* Login Form */}
           <div className="glass-card p-8">
-            <div onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {error && <div className="error-message">{error}</div>}
 
               <div className="input-group">
@@ -85,7 +80,7 @@ const LoginPage = () => {
                 <div className="input-wrapper">
                   <div className="input-icon">
                     <svg
-                      className="w-5 h-5 text-slate-400"
+                      className="w-5 h-5 text-silver"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -107,7 +102,6 @@ const LoginPage = () => {
                     className="glass-input with-icon"
                     placeholder="your@email.com"
                   />
-                  <div className="input-focus-border"></div>
                 </div>
               </div>
 
@@ -118,7 +112,7 @@ const LoginPage = () => {
                 <div className="input-wrapper">
                   <div className="input-icon">
                     <svg
-                      className="w-5 h-5 text-slate-400"
+                      className="w-5 h-5 text-silver"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -140,18 +134,17 @@ const LoginPage = () => {
                     className="glass-input with-icon"
                     placeholder="••••••••••"
                   />
-                  <div className="input-focus-border"></div>
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input type="checkbox" className="custom-checkbox" />
-                  <span className="text-slate-400">Remember me</span>
+                  <span className="text-silver-muted">Remember me</span>
                 </label>
                 <button
                   type="button"
-                  className="text-slate-300 hover:text-white transition-colors duration-300"
+                  className="text-silver hover:text-white transition-colors duration-300"
                   onClick={() =>
                     alert("In a real app, this would open forgot password")
                   }
@@ -164,7 +157,6 @@ const LoginPage = () => {
                 type="submit"
                 disabled={isLoading}
                 className="premium-button"
-                onClick={handleSubmit}
               >
                 <span className="button-content">
                   {isLoading ? (
@@ -192,16 +184,16 @@ const LoginPage = () => {
                   )}
                 </span>
               </button>
-            </div>
+            </form>
 
             <div className="mt-8 text-center">
-              <p className="text-slate-400">
+              <p className="text-silver-muted">
                 Don't have an account?{" "}
                 <button
                   onClick={() =>
                     alert("In a real app, this would navigate to register")
                   }
-                  className="text-slate-300 hover:text-white transition-colors duration-300 underline decoration-slate-500 hover:decoration-slate-300 bg-transparent border-none cursor-pointer font-medium"
+                  className="text-silver hover:text-white transition-colors duration-300 underline decoration-silver-muted hover:decoration-silver bg-transparent border-none cursor-pointer font-medium"
                 >
                   Create one now
                 </button>
@@ -213,10 +205,10 @@ const LoginPage = () => {
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-700"></div>
+                <div className="w-full border-t border-silver"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-slate-950 text-slate-400">
+                <span className="px-4 bg-black text-silver-muted">
                   Or continue with
                 </span>
               </div>
@@ -263,13 +255,100 @@ const LoginPage = () => {
       </div>
 
       <style jsx>{`
+        :root {
+          --silver-light: #e5e7eb;
+          --silver: #c0c0c0;
+          --silver-dark: #9ca3af;
+          --silver-muted: #6b7280;
+        }
+
+        .text-silver-light {
+          color: var(--silver-light);
+        }
+        .text-silver {
+          color: var(--silver);
+        }
+        .text-silver-dark {
+          color: var(--silver-dark);
+        }
+        .text-silver-muted {
+          color: var(--silver-muted);
+        }
+        .border-silver {
+          border-color: var(--silver);
+        }
+        .decoration-silver {
+          text-decoration-color: var(--silver);
+        }
+        .decoration-silver-muted {
+          text-decoration-color: var(--silver-muted);
+        }
+        .bg-silver {
+          background-color: var(--silver);
+        }
+
+        .bg-gradient-to-r.from-silver-light.via-silver.to-silver-dark {
+          background-image: linear-gradient(
+            to right,
+            var(--silver-light),
+            var(--silver),
+            var(--silver-dark)
+          );
+        }
+
+        .wave-container {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        .wave {
+          position: absolute;
+          width: 200%;
+          height: 1px;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            var(--silver),
+            transparent
+          );
+          opacity: 0.3;
+        }
+
+        .wave1 {
+          top: 20%;
+          animation: wave-move 15s ease-in-out infinite;
+        }
+
+        .wave2 {
+          top: 50%;
+          animation: wave-move 20s ease-in-out infinite reverse;
+          opacity: 0.2;
+        }
+
+        .wave3 {
+          top: 80%;
+          animation: wave-move 25s ease-in-out infinite;
+          opacity: 0.1;
+        }
+
+        @keyframes wave-move {
+          0%,
+          100% {
+            transform: translateX(-50%);
+          }
+          50% {
+            transform: translateX(-25%);
+          }
+        }
+
         .glass-card {
-          background: rgba(30, 41, 59, 0.3);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(148, 163, 184, 0.2);
+          background: rgba(0, 0, 0, 0.8);
+          border: 1px solid var(--silver);
           border-radius: 24px;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-            inset 0 1px 0 rgba(148, 163, 184, 0.1);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
+            inset 0 1px 0 rgba(192, 192, 192, 0.1);
           position: relative;
           overflow: hidden;
         }
@@ -284,7 +363,7 @@ const LoginPage = () => {
           background: linear-gradient(
             90deg,
             transparent,
-            rgba(148, 163, 184, 0.4),
+            var(--silver),
             transparent
           );
         }
@@ -298,31 +377,28 @@ const LoginPage = () => {
           width: 80px;
           height: 80px;
           transform-style: preserve-3d;
-          animation: logo-float 6s ease-in-out infinite;
         }
 
         .clock-ring {
           position: absolute;
           inset: 0;
-          border: 2px solid rgba(148, 163, 184, 0.3);
+          border: 2px solid var(--silver);
           border-radius: 50%;
-          background: rgba(30, 41, 59, 0.4);
-          backdrop-filter: blur(10px);
+          background: rgba(0, 0, 0, 0.9);
         }
 
         .clock-face {
           position: absolute;
           inset: 8px;
           border-radius: 50%;
-          background: rgba(15, 23, 42, 0.6);
-          backdrop-filter: blur(5px);
+          background: rgba(0, 0, 0, 0.95);
         }
 
         .clock-hand {
           position: absolute;
           top: 50%;
           left: 50%;
-          background: rgba(148, 163, 184, 0.8);
+          background: var(--silver);
           border-radius: 2px;
           transform-origin: bottom center;
         }
@@ -331,14 +407,12 @@ const LoginPage = () => {
           width: 3px;
           height: 20px;
           transform: translateX(-50%) translateY(-100%) rotate(45deg);
-          animation: clock-hour-slow 120s linear infinite;
         }
 
         .minute-hand {
           width: 2px;
           height: 28px;
           transform: translateX(-50%) translateY(-100%) rotate(180deg);
-          animation: clock-minute-slow 60s linear infinite;
         }
 
         .clock-center {
@@ -347,22 +421,9 @@ const LoginPage = () => {
           left: 50%;
           width: 6px;
           height: 6px;
-          background: rgba(148, 163, 184, 0.9);
+          background: var(--silver);
           border-radius: 50%;
           transform: translate(-50%, -50%);
-        }
-
-        .logo-glow {
-          position: absolute;
-          inset: -4px;
-          border-radius: 50%;
-          background: conic-gradient(
-            from 0deg,
-            transparent,
-            rgba(148, 163, 184, 0.1),
-            transparent
-          );
-          animation: logo-glow 8s linear infinite;
         }
 
         .input-group {
@@ -373,7 +434,7 @@ const LoginPage = () => {
           display: block;
           font-size: 0.875rem;
           font-weight: 500;
-          color: rgba(148, 163, 184, 0.9);
+          color: var(--silver);
           margin-bottom: 0.5rem;
           transition: color 0.3s ease;
         }
@@ -394,9 +455,8 @@ const LoginPage = () => {
         .glass-input {
           width: 100%;
           padding: 1rem 1.25rem;
-          background: rgba(30, 41, 59, 0.4);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(148, 163, 184, 0.2);
+          background: rgba(0, 0, 0, 0.9);
+          border: 1px solid var(--silver);
           border-radius: 16px;
           color: white;
           font-size: 1rem;
@@ -409,52 +469,31 @@ const LoginPage = () => {
         }
 
         .glass-input::placeholder {
-          color: rgba(148, 163, 184, 0.5);
+          color: var(--silver-muted);
         }
 
         .glass-input:focus {
-          border-color: rgba(148, 163, 184, 0.5);
-          box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.1),
-            0 8px 25px -8px rgba(148, 163, 184, 0.2);
+          border-color: var(--silver-light);
+          box-shadow: 0 0 0 4px rgba(192, 192, 192, 0.1),
+            0 8px 25px -8px rgba(192, 192, 192, 0.2);
           transform: translateY(-2px);
-        }
-
-        .glass-input:focus + .input-focus-border {
-          width: 100%;
-        }
-
-        .input-focus-border {
-          position: absolute;
-          bottom: 0;
-          left: 50%;
-          width: 0;
-          height: 2px;
-          background: linear-gradient(
-            90deg,
-            rgba(148, 163, 184, 0.8),
-            rgba(203, 213, 225, 0.8)
-          );
-          transition: all 0.3s ease;
-          transform: translateX(-50%);
-          border-radius: 1px;
         }
 
         .custom-checkbox {
           appearance: none;
           width: 1rem;
           height: 1rem;
-          border: 1px solid rgba(148, 163, 184, 0.3);
+          border: 1px solid var(--silver);
           border-radius: 4px;
-          background: rgba(30, 41, 59, 0.4);
-          backdrop-filter: blur(5px);
+          background: rgba(0, 0, 0, 0.9);
           cursor: pointer;
           position: relative;
           transition: all 0.3s ease;
         }
 
         .custom-checkbox:checked {
-          background: rgba(148, 163, 184, 0.8);
-          border-color: rgba(148, 163, 184, 0.8);
+          background: var(--silver);
+          border-color: var(--silver-light);
         }
 
         .custom-checkbox:checked::after {
@@ -463,7 +502,7 @@ const LoginPage = () => {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          color: white;
+          color: black;
           font-size: 0.75rem;
           font-weight: bold;
         }
@@ -473,14 +512,14 @@ const LoginPage = () => {
           padding: 0;
           background: linear-gradient(
             135deg,
-            rgba(148, 163, 184, 0.9),
-            rgba(100, 116, 139, 0.9)
+            var(--silver),
+            var(--silver-dark)
           );
-          border: 1px solid rgba(148, 163, 184, 0.3);
+          border: 1px solid var(--silver-light);
           border-radius: 16px;
           font-weight: 700;
           font-size: 1.1rem;
-          color: white;
+          color: black;
           cursor: pointer;
           position: relative;
           overflow: hidden;
@@ -489,7 +528,7 @@ const LoginPage = () => {
 
         .premium-button:hover {
           transform: translateY(-2px);
-          box-shadow: 0 20px 40px -12px rgba(148, 163, 184, 0.4),
+          box-shadow: 0 20px 40px -12px rgba(192, 192, 192, 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
@@ -507,7 +546,7 @@ const LoginPage = () => {
           background: linear-gradient(
             90deg,
             transparent,
-            rgba(255, 255, 255, 0.2),
+            rgba(255, 255, 255, 0.3),
             transparent
           );
           transition: left 0.5s ease;
@@ -533,120 +572,39 @@ const LoginPage = () => {
           justify-content: center;
           gap: 0.5rem;
           padding: 0.75rem 1rem;
-          background: rgba(30, 41, 59, 0.3);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(148, 163, 184, 0.2);
+          background: rgba(0, 0, 0, 0.9);
+          border: 1px solid var(--silver);
           border-radius: 12px;
-          color: rgba(148, 163, 184, 0.9);
+          color: var(--silver);
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
         }
 
         .social-button:hover {
-          background: rgba(30, 41, 59, 0.5);
-          border-color: rgba(148, 163, 184, 0.3);
+          background: rgba(0, 0, 0, 0.95);
+          border-color: var(--silver-light);
           transform: translateY(-1px);
-          box-shadow: 0 8px 25px -8px rgba(148, 163, 184, 0.2);
+          box-shadow: 0 8px 25px -8px rgba(192, 192, 192, 0.2);
         }
 
         .loading-spinner {
           width: 20px;
           height: 20px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top: 2px solid white;
+          border: 2px solid rgba(0, 0, 0, 0.3);
+          border-top: 2px solid black;
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
 
         .error-message {
           background: rgba(239, 68, 68, 0.1);
-          border: 1px solid rgba(239, 68, 68, 0.3);
+          border: 1px solid rgba(239, 68, 68, 0.5);
           color: rgb(248, 113, 113);
           padding: 0.75rem 1rem;
           border-radius: 12px;
           font-size: 0.875rem;
           text-align: center;
-          backdrop-filter: blur(10px);
-        }
-
-        @keyframes logo-float {
-          0%,
-          100% {
-            transform: translateY(0px) rotateY(0deg);
-          }
-          50% {
-            transform: translateY(-10px) rotateY(180deg);
-          }
-        }
-
-        @keyframes logo-glow {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes clock-hour-slow {
-          0% {
-            transform: translateX(-50%) translateY(-100%) rotate(45deg);
-          }
-          100% {
-            transform: translateX(-50%) translateY(-100%) rotate(405deg);
-          }
-        }
-
-        @keyframes clock-minute-slow {
-          0% {
-            transform: translateX(-50%) translateY(-100%) rotate(180deg);
-          }
-          100% {
-            transform: translateX(-50%) translateY(-100%) rotate(540deg);
-          }
-        }
-
-        @keyframes float-geometric {
-          0%,
-          100% {
-            transform: rotate(45deg) translateY(0px);
-          }
-          50% {
-            transform: rotate(225deg) translateY(-15px);
-          }
-        }
-
-        @keyframes float-circle {
-          0%,
-          100% {
-            transform: scale(1) translateY(0px);
-          }
-          50% {
-            transform: scale(1.1) translateY(-10px);
-          }
-        }
-
-        @keyframes float-square {
-          0%,
-          100% {
-            transform: rotate(12deg) translateY(0px);
-          }
-          50% {
-            transform: rotate(192deg) translateY(-12px);
-          }
-        }
-
-        @keyframes float-line {
-          0%,
-          100% {
-            transform: translateX(0px) rotate(0deg);
-            opacity: 0.5;
-          }
-          50% {
-            transform: translateX(20px) rotate(5deg);
-            opacity: 1;
-          }
         }
 
         @keyframes spin {
@@ -656,22 +614,6 @@ const LoginPage = () => {
           100% {
             transform: rotate(360deg);
           }
-        }
-
-        .animate-float-geometric {
-          animation: float-geometric 8s ease-in-out infinite;
-        }
-
-        .animate-float-circle {
-          animation: float-circle 6s ease-in-out infinite;
-        }
-
-        .animate-float-square {
-          animation: float-square 10s ease-in-out infinite;
-        }
-
-        .animate-float-line {
-          animation: float-line 12s ease-in-out infinite;
         }
       `}</style>
     </div>
