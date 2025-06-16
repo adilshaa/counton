@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, isAuthenticated } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,6 +37,10 @@ const RegistrationPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />; // Redirect if logged in
+  }
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative">
