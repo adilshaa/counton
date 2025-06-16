@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -39,10 +39,6 @@ const LoginPage = () => {
       setIsLoading(false);
     }
   };
-
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />; // Redirect if logged in
-  }
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative">
