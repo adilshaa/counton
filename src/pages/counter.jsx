@@ -143,17 +143,26 @@ const TimeCounterVideoApp = () => {
       if (!canvas) return;
 
       const ctx = canvas.getContext("2d");
-      const width = canvas.width;
-      const height = canvas.height;
 
-      ctx.clearRect(0, 0, width, height);
+      const displayWidth = canvas.clientWidth;
+      const displayHeight = canvas.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
+
+      ctx.scale(dpr, dpr);
+
+      // Now all drawing operations use CSS pixel dimensions.
+      // Clear rect should use displayWidth/Height because context is scaled.
+      ctx.clearRect(0, 0, displayWidth, displayHeight);
 
       if (background === "black") {
         ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
       } else if (background === "white") {
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
       }
       // If background is transparent, we don't fill the canvas,
       // relying on the page background (controlled by ThemeContext) to show through.
@@ -190,7 +199,7 @@ const TimeCounterVideoApp = () => {
               )
             : null;
         const progress = time / duration;
-        drawCounterWithStyle(ctx, currentTimeData, width, height, progress, previousTimeData, timerFontSize);
+        drawCounterWithStyle(ctx, currentTimeData, displayWidth, displayHeight, progress, previousTimeData, timerFontSize);
       } else {
         const totalNumbers = Math.abs(endNumber - startNumber) + 1;
         const progress = Math.min(time / duration, 1);
@@ -211,7 +220,7 @@ const TimeCounterVideoApp = () => {
                   : Math.max(endNumber - Math.floor((previousTime.current / duration) * totalNumbers), startNumber)
               )
             : null;
-        drawNumberCounter(ctx, currentNumberData, width, height, progress, previousNumberData, timerFontSize);
+        drawNumberCounter(ctx, currentNumberData, displayWidth, displayHeight, progress, previousNumberData, timerFontSize);
       }
       previousTime.current = time;
     },
