@@ -76,7 +76,7 @@ const RegistrationPage = () => {
 
           {/* Registration Form */}
           <div className="glass-card p-8">
-            <div onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {error && <div className="error-message">{error}</div>}
 
               <div className="input-group">
@@ -234,7 +234,7 @@ const RegistrationPage = () => {
                   )}
                 </span>
               </button>
-            </div>
+            </form>
 
             <div className="mt-8 text-center">
               <p className="text-silver-muted">
