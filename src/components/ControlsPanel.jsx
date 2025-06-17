@@ -1,46 +1,11 @@
 import React from 'react';
 import { Settings, Palette, Zap } from 'lucide-react';
-import SettingsTab from './SettingsTab';
-import StyleTab from './StyleTab';
-import EffectsTab from './EffectsTab';
+// SettingsTab, StyleTab, EffectsTab imports are removed as they are no longer rendered here.
 
 const ControlsPanel = ({
-  activeTab,
-  setActiveTab,
-  duration,
-  setDuration,
-  countMode,
-  setCountMode,
-  counterType,
-  setCounterType,
-  startNumber,
-  setStartNumber,
-  endNumber,
-  setEndNumber,
-  numberCountMode,
-  setNumberCountMode,
-  speed,
-  setSpeed,
-  useCustomSpeed,
-  setUseCustomSpeed,
-  customSpeed,
-  setCustomSpeed,
-  background,
-  setBackground,
-  counterStyle,
-  setCounterStyle,
-  timerFontSize,
-  setTimerFontSize,
-  isRecordingGif,
-  setIsRecordingGif,
-  selectedFontFamily,    // New font props
-  setSelectedFontFamily,
-  customFontInput,
-  setCustomFontInput,
-  defaultFonts,
-  loadedCustomFonts,
-  setLoadedCustomFonts,
-  // Add other props that might be identified as necessary later
+  activeModal,      // New prop
+  setActiveModal,   // New prop
+  // All other props that were passed down to tabs are removed
 }) => {
   return (
     <div className="w-80 h-full bg-white/70 dark:bg-gray-900/30 backdrop-blur-xl border-r border-gray-200/80 dark:border-gray-700/20 overflow-y-auto transition-colors duration-300">
@@ -55,13 +20,13 @@ const ControlsPanel = ({
           </p>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Modal Trigger Buttons (formerly Tab Navigation) */}
         <div className="bg-gray-200/50 dark:bg-gray-800/30 backdrop-blur-xl rounded-xl p-1 border border-gray-300/70 dark:border-gray-700/20 transition-colors duration-300">
           <div className="flex flex-col space-y-1">
             <button
-              onClick={() => setActiveTab("settings")}
+              onClick={() => setActiveModal("settings")}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                activeTab === "settings"
+                activeModal === "settings"
                   ? "bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30 shadow-lg backdrop-blur-sm"
                   : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
               }`}
@@ -70,9 +35,9 @@ const ControlsPanel = ({
               Settings
             </button>
             <button
-              onClick={() => setActiveTab("style")}
+              onClick={() => setActiveModal("style")}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                activeTab === "style"
+                activeModal === "style"
                   ? "bg-purple-100 text-purple-700 border border-purple-300 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30 shadow-lg backdrop-blur-sm"
                   : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
               }`}
@@ -81,9 +46,9 @@ const ControlsPanel = ({
               Style
             </button>
             <button
-              onClick={() => setActiveTab("effects")}
+              onClick={() => setActiveModal("effects")}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
-                activeTab === "effects"
+                activeModal === "effects"
                   ? "bg-pink-100 text-pink-700 border border-pink-300 dark:bg-pink-500/20 dark:text-pink-400 dark:border-pink-500/30 shadow-lg backdrop-blur-sm"
                   : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
               }`}
@@ -94,59 +59,7 @@ const ControlsPanel = ({
           </div>
         </div>
 
-        {/* Settings Content Card */}
-        <div className="bg-gray-200/40 dark:bg-gray-800/20 backdrop-blur-xl rounded-xl p-4 border border-gray-300/60 dark:border-gray-700/20 transition-colors duration-300">
-          {/* Settings Tab */}
-          {activeTab === "settings" && (
-            <SettingsTab
-              duration={duration}
-              setDuration={setDuration}
-              countMode={countMode}
-              setCountMode={setCountMode}
-              counterType={counterType}
-              setCounterType={setCounterType}
-              startNumber={startNumber}
-              setStartNumber={setStartNumber}
-              endNumber={endNumber}
-              setEndNumber={setEndNumber}
-              numberCountMode={numberCountMode}
-              setNumberCountMode={setNumberCountMode}
-              speed={speed}
-              setSpeed={setSpeed}
-              useCustomSpeed={useCustomSpeed}
-              setUseCustomSpeed={setUseCustomSpeed}
-              customSpeed={customSpeed}
-              setCustomSpeed={setCustomSpeed}
-              isRecordingGif={isRecordingGif} // Pass down to SettingsTab
-              setIsRecordingGif={setIsRecordingGif} // Pass down to SettingsTab
-            />
-          )}
-
-          {/* Style Tab */}
-          {activeTab === "style" && (
-            <StyleTab
-              background={background}
-              setBackground={setBackground}
-              timerFontSize={timerFontSize}
-              setTimerFontSize={setTimerFontSize}
-              selectedFontFamily={selectedFontFamily} // Pass font props
-              setSelectedFontFamily={setSelectedFontFamily}
-              customFontInput={customFontInput}
-              setCustomFontInput={setCustomFontInput}
-              defaultFonts={defaultFonts}
-              loadedCustomFonts={loadedCustomFonts}
-              setLoadedCustomFonts={setLoadedCustomFonts}
-            />
-          )}
-
-          {/* Effects Tab */}
-          {activeTab === "effects" && (
-            <EffectsTab
-              counterStyle={counterStyle}
-              setCounterStyle={setCounterStyle}
-            />
-          )}
-        </div>
+        {/* The section that rendered SettingsTab, StyleTab, EffectsTab is now REMOVED. */}
       </div>
       {/* Enhanced Glassmorphism Styles - Copied from original, can be refactored later if needed */}
       <style jsx>{`
