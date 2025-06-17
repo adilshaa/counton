@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import GIF from 'gif.js'; // Import GIF library
 import { Film } from "lucide-react";
 import ControlsPanel from '../components/ControlsPanel';
 import VideoPreview from '../components/VideoPreview';
@@ -20,6 +21,18 @@ const TimeCounterVideoApp = () => {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
   const [timerFontSize, setTimerFontSize] = useState(48); // Default to 48px (within 1-100px range)
+
+  // GIF Recording State and Refs
+  const [isRecordingGif, setIsRecordingGif] = useState(false);
+  const [isRenderingGif, setIsRenderingGif] = useState(false); // New state for GIF rendering
+  const gifInstanceRef = useRef(null);
+  const timeSinceLastGifFrameRef = useRef(0);
+  const isRecordingGifRef = useRef(isRecordingGif);
+  useEffect(() => { isRecordingGifRef.current = isRecordingGif; }, [isRecordingGif]);
+
+  // GIF Frame Constants
+  const GIF_FRAME_RATE = 10; // FPS
+  const GIF_FRAME_DELAY_MS = 1000 / GIF_FRAME_RATE;
 
   // Styling options for the canvas content itself
   const [background, setBackground] = useState("black");
@@ -509,6 +522,16 @@ const TimeCounterVideoApp = () => {
 
     loopCurrentTimeRef.current += (deltaTime / 1000) * effectiveSpeedRef.current;
 
+    // GIF Frame Capture Logic
+    if (isRecordingGifRef.current && gifInstanceRef.current && canvasRef.current) {
+      timeSinceLastGifFrameRef.current += deltaTime;
+      if (timeSinceLastGifFrameRef.current >= GIF_FRAME_DELAY_MS) {
+        gifInstanceRef.current.addFrame(canvasRef.current, { copy: true, delay: GIF_FRAME_DELAY_MS });
+        // Adjust timeSinceLastGifFrameRef, carrying over any excess time
+        timeSinceLastGifFrameRef.current = timeSinceLastGifFrameRef.current % GIF_FRAME_DELAY_MS;
+      }
+    }
+
     let newTimeForState = loopCurrentTimeRef.current;
 
     if (loopCurrentTimeRef.current >= durationRef.current) {
@@ -518,131 +541,164 @@ const TimeCounterVideoApp = () => {
       drawTimer(newTimeForState); // Draw final frame
       setCurrentTime(newTimeForState); // Update React state
 
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-        mediaRecorderRef.current.stop(); // This will trigger onstop
+      if (isRecordingGifRef.current && gifInstanceRef.current) {
+        finalizeAndDownloadGif(); // Call finalize for GIF
+        // States like setIsRecording(false), setIsComplete(true) etc. will be handled by finalize or stopRecording
+      } else if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop(); // This will trigger onstop for video
       } else {
-        // If MediaRecorder isn't active or already stopped, manually set completion
+        // If neither GIF nor video recorder was active/correctly configured but timer ran out
         setIsComplete(true);
-        setIsRecording(false); // This will update isRecordingRef via its useEffect
-        setIsPaused(false);   // This will update isPausedRef via its useEffect
+        setIsRecording(false);
+        setIsPaused(false);
       }
-       // No further frames, isRecordingRef will be false soon
     } else {
       drawTimer(newTimeForState);
       setCurrentTime(newTimeForState);
-      // Only request next frame if still recording and not paused
-      // This check is implicitly handled by the condition at the start of the loop
-      // in the next frame, but good to be explicit.
       if (isRecordingRef.current && !isPausedRef.current) {
          animationFrameRef.current = requestAnimationFrame(animationLoop);
       }
     }
   }, [drawTimer]); // Dependencies: only drawTimer. Others are accessed via refs.
 
+  const finalizeAndDownloadGif = () => {
+    if (!gifInstanceRef.current) {
+      console.warn("finalizeAndDownloadGif called but gifInstanceRef is null");
+      setIsRecordingGif(false); // Ensure mode is reset
+      setIsRecording(false);    // Ensure main recording state is reset
+      setIsPaused(false);
+      return;
+    }
+
+    setIsRenderingGif(true);
+    console.log("GIF: Starting rendering process...");
+
+    gifInstanceRef.current.on('finished', (blob) => {
+      console.log("GIF: 'finished' event triggered.");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      a.style.display = 'none';
+      a.href = url;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      a.download = `timer_animation_${timestamp}.gif`;
+      a.click();
+      URL.revokeObjectURL(url);
+      if (a.parentNode) {
+        a.parentNode.removeChild(a);
+      }
+
+      setIsRenderingGif(false);
+      gifInstanceRef.current = null;
+      setIsComplete(true); // Mark complete after download
+      // setIsRecording(false) and setIsRecordingGif(false) should have been set already
+      // or will be set by stopRecording which calls this.
+    });
+
+    gifInstanceRef.current.on('abort', () => {
+      console.error("GIF: Rendering aborted.");
+      setIsRenderingGif(false);
+      gifInstanceRef.current = null;
+      setIsRecording(false); // Ensure all recording states are reset
+      setIsRecordingGif(false);
+      setIsComplete(true); // Mark as complete even on abort to signify process end
+    });
+
+    try {
+      gifInstanceRef.current.render();
+    } catch (e) {
+      console.error("GIF: Error during render call:", e);
+      setIsRenderingGif(false);
+      gifInstanceRef.current = null;
+      setIsRecording(false);
+      setIsRecordingGif(false);
+      setIsComplete(true);
+      alert("Failed to render GIF. See console for details.");
+    }
+  };
 
   const startRecording = async () => {
+    // Common setup
     setCurrentTime(0);
     loopCurrentTimeRef.current = 0;
-    setIsRecording(true); // Triggers ref update
-    setIsPaused(false);   // Triggers ref update
+    setIsRecording(true);
+    setIsPaused(false);
     setIsComplete(false);
-    setRecordedChunks([]);
     previousTime.current = -1;
     animationPhase.current = 0;
 
-    drawTimer(0); // Draw initial frame
+    drawTimer(0); // Draw initial frame for both types
 
     const canvas = canvasRef.current;
     if (!canvas) {
       console.error("Canvas not available for recording.");
-      setIsRecording(false); // Reset state if canvas is not there
+      setIsRecording(false);
       return;
     }
 
-    // Ensure canvas is prepared with DPR scaling and initial frame drawn
-    // Note: drawTimer now handles DPR setup internally.
-    // We pass the initial time (0 for a new recording).
-    drawTimer(0); // THIS IS THE KEY ADDITION/RE-ORDERING
-
-    try {
-      // It's good practice to check if captureStream is supported
-      if (!canvas.captureStream) {
-        console.error("HTMLCanvasElement.captureStream() is not supported by this browser.");
-        alert("Video recording is not supported by your browser.");
-        setIsRecording(false);
-        return;
-      }
-
-      streamRef.current = canvas.captureStream(25); // 25 FPS, or make configurable
-
-      if (!streamRef.current) {
+    if (isRecordingGif) { // Check state directly, as this is the user's intent for this new recording session
+      console.log("Starting GIF recording...");
+      gifInstanceRef.current = new GIF({
+        workers: 2,
+        quality: 10, // Lower for faster processing, higher for better quality
+        workerScript: '/gif.worker.js', // Ensure this path is correct
+        width: canvas.width / (window.devicePixelRatio || 1), // Use logical canvas size
+        height: canvas.height / (window.devicePixelRatio || 1),
+      });
+      timeSinceLastGifFrameRef.current = 0;
+      mediaRecorderRef.current = null; // Ensure video recorder is not used
+      setRecordedChunks([]); // Clear any video chunks
+    } else {
+      console.log("Starting video recording...");
+      gifInstanceRef.current = null; // Ensure GIF recorder is not used
+      setRecordedChunks([]); // Clear video chunks for new recording
+      // Existing MediaRecorder setup
+      // Ensure canvas is prepared with DPR scaling and initial frame drawn (drawTimer(0) above does this)
+      try {
+        if (!canvas.captureStream) {
+          console.error("HTMLCanvasElement.captureStream() is not supported by this browser.");
+          alert("Video recording is not supported by your browser.");
+          setIsRecording(false); return;
+        }
+        streamRef.current = canvas.captureStream(25); // FPS for video
+        if (!streamRef.current) {
           console.error("Failed to capture stream from canvas.");
-          setIsRecording(false);
-          return;
-      }
-
-      const options = { mimeType: "video/webm; codecs=vp9" }; // Or other supported types
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          setIsRecording(false); return;
+        }
+        const options = { mimeType: "video/webm; codecs=vp9" };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
           console.warn(`${options.mimeType} is not supported, trying default.`);
-          // Try with no specific mimeType or a fallback
-          try {
-              mediaRecorderRef.current = new MediaRecorder(streamRef.current);
-          } catch (e) {
-              console.error("MediaRecorder setup failed with default options:", e);
-              alert("Failed to initialize video recorder with default settings.");
-              setIsRecording(false);
-              return;
-          }
-      } else {
+          try { mediaRecorderRef.current = new MediaRecorder(streamRef.current); }
+          catch (e) { console.error("MediaRecorder setup failed (default):", e); setIsRecording(false); return; }
+        } else {
           mediaRecorderRef.current = new MediaRecorder(streamRef.current, options);
-      }
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          setRecordedChunks((prev) => [...prev, event.data]);
         }
-      };
-
-      mediaRecorderRef.current.onstop = () => {
-        setIsComplete(true);
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0) setRecordedChunks((prev) => [...prev, event.data]);
+        };
+        mediaRecorderRef.current.onstop = () => {
+          setIsComplete(true); setIsRecording(false); setIsPaused(false);
+          if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
+        };
+        mediaRecorderRef.current.onerror = (event) => {
+          console.error("MediaRecorder error:", event.error);
+          if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+          if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
+          setIsRecording(false); setIsPaused(false); setIsComplete(true); setRecordedChunks([]);
+        };
+        mediaRecorderRef.current.start();
+      } catch (error) {
+        console.error("Error starting video recording:", error);
+        alert(`Could not start video recording: ${error.message}`);
         setIsRecording(false);
-        setIsPaused(false);
-        if (streamRef.current) { // Ensure streamRef.current exists
-          streamRef.current.getTracks().forEach(track => track.stop());
-        }
-      };
-
-      mediaRecorderRef.current.onerror = (event) => {
-        console.error("MediaRecorder error:", event.error);
-        alert(`MediaRecorder error: ${event.error.name} - ${event.error.message}`);
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-          animationFrameRef.current = null;
-        }
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-          streamRef.current = null;
-        }
-        setIsRecording(false);
-        setIsPaused(false);
-        setIsComplete(true); // Indicate process ended, possibly with error
-        setRecordedChunks([]); // Clear any potentially corrupted chunks
-      };
-
-      mediaRecorderRef.current.start();
-
-      lastFrameTimeRef.current = performance.now(); // Reset last frame time
-      animationFrameRef.current = requestAnimationFrame(animationLoop);
-
-    } catch (error) {
-      console.error("Error starting recording:", error);
-      alert(`Could not start recording: ${error.message}`);
-      setIsRecording(false); // Reset recording state
-      if (streamRef.current) { // Cleanup stream if it was partially setup
-          streamRef.current.getTracks().forEach(track => track.stop());
-          streamRef.current = null;
+        if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
+        return; // Important to return if video setup fails
       }
     }
+
+    // Common for both GIF and Video
+    lastFrameTimeRef.current = performance.now();
+    animationFrameRef.current = requestAnimationFrame(animationLoop);
   };
 
   const pauseRecording = () => {
@@ -674,22 +730,30 @@ const TimeCounterVideoApp = () => {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-    // Check if mediaRecorder is available and in a state that can be stopped
-    if (mediaRecorderRef.current &&
+
+    if (isRecordingGifRef.current && gifInstanceRef.current) {
+      console.log("GIF: Stop recording called. Initiating finalize and download.");
+      finalizeAndDownloadGif();
+      // Note: setIsRecording(false), setIsPaused(false) are called below.
+      // setIsRecordingGif(false) is also called below.
+      // setIsComplete is handled by finalizeAndDownloadGif or its callbacks.
+    } else if (mediaRecorderRef.current &&
         (mediaRecorderRef.current.state === "recording" || mediaRecorderRef.current.state === "paused")) {
-      mediaRecorderRef.current.stop(); // This will trigger the onstop event
-    } else if (streamRef.current) {
-      // If recorder wasn't active but stream was, clean up stream
+      mediaRecorderRef.current.stop(); // This will trigger the onstop event for video
+    } else if (!isRecordingGifRef.current && streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
-      // Manually set states if onstop isn't triggered because recorder wasn't recording
-      setIsRecording(false);
-      setIsPaused(false);
-      setIsComplete(true); // Consider if this should be true or false if no recording happened
-    } else {
-      // If nothing was really active, just ensure states are reset
-      setIsRecording(false);
-      setIsPaused(false);
+      setIsComplete(true);
+    } else if (!isRecordingGifRef.current && !mediaRecorderRef.current && isRecordingRef.current) {
+      // If recording was started but neither recorder was initialized (e.g. canvas error)
+      // and stop is called.
+      setIsComplete(true);
+    }
+
+    setIsRecording(false);
+    setIsPaused(false);
+    if (isRecordingGifRef.current) { // Check ref before state updates fully propagate
+      setIsRecordingGif(false);
     }
   };
 
@@ -762,6 +826,8 @@ const TimeCounterVideoApp = () => {
           setNumberCountMode={setNumberCountMode}
           timerFontSize={timerFontSize}
           setTimerFontSize={setTimerFontSize}
+          isRecordingGif={isRecordingGif} // Pass GIF state
+          setIsRecordingGif={setIsRecordingGif} // Pass GIF setter
         />
         <div className="flex-1 h-full flex flex-col overflow-hidden">
           <div className="absolute top-4 right-4 z-50">
@@ -785,6 +851,8 @@ const TimeCounterVideoApp = () => {
             pauseRecording={pauseRecording}
             stopRecording={stopRecording}
             downloadVideo={downloadVideo}
+            isRecordingGif={isRecordingGif} // Pass GIF state for download button logic potentially
+            isRenderingGif={isRenderingGif} // Pass GIF rendering state
           />
         </div>
       </div>

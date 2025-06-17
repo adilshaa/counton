@@ -29,8 +29,10 @@ const ControlsPanel = ({
   setBackground,
   counterStyle,
   setCounterStyle,
-  timerFontSize, // Add timerFontSize
-  setTimerFontSize, // Add setTimerFontSize
+  timerFontSize,
+  setTimerFontSize,
+  isRecordingGif,      // New prop for GIF mode
+  setIsRecordingGif,   // New prop for setting GIF mode
   // Add other props that might be identified as necessary later
 }) => {
   return (
@@ -108,6 +110,8 @@ const ControlsPanel = ({
               setUseCustomSpeed={setUseCustomSpeed}
               customSpeed={customSpeed}
               setCustomSpeed={setCustomSpeed}
+              isRecordingGif={isRecordingGif} // Pass down to SettingsTab
+              setIsRecordingGif={setIsRecordingGif} // Pass down to SettingsTab
             />
           )}
 

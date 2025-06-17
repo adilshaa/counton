@@ -9,6 +9,8 @@ const ActionButtons = ({
   pauseRecording,
   stopRecording,
   downloadVideo,
+  isRecordingGif, // New prop
+  isRenderingGif, // New prop
 }) => {
   return (
     <div className="p-6 pt-0">
@@ -16,7 +18,7 @@ const ActionButtons = ({
         <div className="flex flex-wrap gap-3 justify-center">
           <button
             onClick={startRecording}
-            disabled={isRecording}
+            disabled={isRecording || isRenderingGif}
             className="flex items-center gap-2 bg-gradient-to-r from-red-100/80 to-red-200/80 hover:from-red-200/80 hover:to-red-300/80 disabled:from-gray-200/50 disabled:to-gray-300/50 disabled:cursor-not-allowed text-red-600 disabled:text-gray-400 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-red-300/50 disabled:border-gray-300/50 backdrop-blur-sm dark:from-red-500/20 dark:to-red-600/20 dark:hover:from-red-500/30 dark:hover:to-red-600/30 dark:disabled:from-gray-600/20 dark:disabled:to-gray-700/20 dark:text-red-400 dark:disabled:text-gray-500 dark:border-red-500/30 dark:disabled:border-gray-600/30"
           >
             <Play size={16} />
@@ -25,7 +27,7 @@ const ActionButtons = ({
 
           <button
             onClick={pauseRecording}
-            disabled={!isRecording}
+            disabled={!isRecording || isRenderingGif}
             className="flex items-center gap-2 bg-gradient-to-r from-yellow-100/80 to-orange-200/80 hover:from-yellow-200/80 hover:to-orange-300/80 disabled:from-gray-200/50 disabled:to-gray-300/50 disabled:cursor-not-allowed text-yellow-700 disabled:text-gray-400 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-yellow-300/50 disabled:border-gray-300/50 backdrop-blur-sm dark:from-yellow-500/20 dark:to-orange-500/20 dark:hover:from-yellow-500/30 dark:hover:to-orange-500/30 dark:disabled:from-gray-600/20 dark:disabled:to-gray-700/20 dark:text-yellow-400 dark:disabled:text-gray-500 dark:border-yellow-500/30 dark:disabled:border-gray-600/30"
           >
             <Pause size={16} />
@@ -34,7 +36,7 @@ const ActionButtons = ({
 
           <button
             onClick={stopRecording}
-            disabled={!isRecording}
+            disabled={!isRecording || isRenderingGif}
             className="flex items-center gap-2 bg-gradient-to-r from-gray-300/80 to-gray-400/80 hover:from-gray-400/80 hover:to-gray-500/80 disabled:from-gray-200/50 disabled:to-gray-300/50 disabled:cursor-not-allowed text-gray-700 disabled:text-gray-400 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-gray-400/50 disabled:border-gray-300/50 backdrop-blur-sm dark:from-gray-500/20 dark:to-gray-600/20 dark:hover:from-gray-500/30 dark:hover:to-gray-600/30 dark:disabled:from-gray-600/20 dark:disabled:to-gray-700/20 dark:text-gray-400 dark:disabled:text-gray-500 dark:border-gray-500/30 dark:disabled:border-gray-600/30"
           >
             <Square size={16} />
@@ -43,20 +45,35 @@ const ActionButtons = ({
 
           <button
             onClick={downloadVideo}
-            disabled={!isComplete}
+            disabled={!isComplete || isRenderingGif || isRecordingGif} // Also disable if it was a GIF recording
             className="flex items-center gap-2 bg-gradient-to-r from-green-100/80 to-emerald-200/80 hover:from-green-200/80 hover:to-emerald-300/80 disabled:from-gray-200/50 disabled:to-gray-300/50 disabled:cursor-not-allowed text-green-700 disabled:text-gray-400 px-4 py-2 rounded-xl font-medium transition-all transform hover:scale-105 border border-green-300/50 disabled:border-gray-300/50 backdrop-blur-sm dark:from-green-500/20 dark:to-emerald-500/20 dark:hover:from-green-500/30 dark:hover:to-emerald-500/30 dark:disabled:from-gray-600/20 dark:disabled:to-gray-700/20 dark:text-green-400 dark:disabled:text-gray-500 dark:border-green-500/30 dark:disabled:border-gray-600/30"
           >
             <Download size={16} />
-            Download
+            Download Video
           </button>
         </div>
 
-        {isComplete && (
+        {isRenderingGif && (
+          <div className="mt-3 text-center">
+            <div className="inline-flex items-center gap-2 bg-blue-100/80 dark:bg-blue-500/10 border border-blue-300/50 dark:border-blue-500/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-lg backdrop-blur-sm">
+              {/* Simple spinner */}
+              <svg className="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span className="text-sm">
+                Rendering GIF, please wait...
+              </span>
+            </div>
+          </div>
+        )}
+
+        {isComplete && !isRecordingGif && !isRenderingGif && ( // Only show video complete if not a GIF and not rendering GIF
           <div className="mt-3 text-center">
             <div className="inline-flex items-center gap-2 bg-green-100/80 dark:bg-green-500/10 border border-green-300/50 dark:border-green-500/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-lg backdrop-blur-sm">
               <div className="w-1.5 h-1.5 bg-green-500 dark:bg-green-400 rounded-full"></div>
               <span className="text-sm">
-                Recording complete! Ready to download.
+                Video recording complete! Ready to download.
               </span>
             </div>
           </div>

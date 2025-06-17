@@ -19,9 +19,40 @@ const SettingsTab = ({
   setUseCustomSpeed,
   customSpeed,
   setCustomSpeed,
+  isRecordingGif,      // New prop
+  setIsRecordingGif,   // New prop
 }) => {
   return (
     <div className="space-y-4">
+      {/* Output Format Setting */}
+      <div>
+        <label className="block text-slate-700 dark:text-white font-medium mb-2 text-sm">
+          Output Format
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setIsRecordingGif(false)}
+            className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
+              !isRecordingGif
+                ? "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30"
+                : "bg-gray-200/70 text-slate-700 hover:bg-gray-300/70 dark:bg-gray-700/30 dark:text-gray-300 dark:hover:bg-gray-600/30 border border-gray-300/70 dark:border-gray-600/30"
+            }`}
+          >
+            Video (webm)
+          </button>
+          <button
+            onClick={() => setIsRecordingGif(true)}
+            className={`p-2 rounded-lg font-medium transition-all text-sm backdrop-blur-sm ${
+              isRecordingGif
+                ? "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30"
+                : "bg-gray-200/70 text-slate-700 hover:bg-gray-300/70 dark:bg-gray-700/30 dark:text-gray-300 dark:hover:bg-gray-600/30 border border-gray-300/70 dark:border-gray-600/30"
+            }`}
+          >
+            Animated GIF
+          </button>
+        </div>
+      </div>
+
       <div>
         <label className="block text-slate-700 dark:text-white font-medium mb-2 text-sm">
           Duration
