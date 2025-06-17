@@ -1,7 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-// Removed LoginPage, RegistrationPage imports
-import { SignIn, SignUp, UserProfile } from '@clerk/clerk-react'; // Import Clerk components
+// Import new custom pages
+import LoginPage from './pages/LoginPage';
+import RegistrationPage from './pages/RegistrationPage';
+// Only UserProfile might be needed from here now, or this import might be removed if not used.
+import { UserProfile } from '@clerk/clerk-react';
 import TimeCounterVideoApp from './pages/counter';
 // Removed PaymentPage import
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,10 +15,10 @@ function App() {
   return (
     <Routes>
       <Route element={<PublicRouteOnly />}>
-        {/* Updated to use Clerk's SignIn component */}
-        <Route path="/login" element={<SignIn routing="path" path="/login" />} />
-        {/* Updated to use Clerk's SignUp component */}
-        <Route path="/register" element={<SignUp routing="path" path="/register" />} />
+        {/* Route to custom LoginPage */}
+        <Route path="/login" element={<LoginPage />} />
+        {/* Route to custom RegistrationPage */}
+        <Route path="/register" element={<RegistrationPage />} />
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<TimeCounterVideoApp />} />
