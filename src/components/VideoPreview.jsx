@@ -37,26 +37,6 @@ const VideoPreview = ({
             </div>
           )}
 
-          {/* Progress Bar */}
-          {isRecording && (
-            <div className="absolute bottom-4 left-4 right-4 bg-gray-200/50 dark:bg-black/30 backdrop-blur-xl border border-gray-300/70 dark:border-gray-700/30 rounded-lg p-3 transition-colors duration-300">
-              <div className="flex justify-between text-slate-700 dark:text-white text-sm mb-2">
-                <span>{Math.floor(currentTime)}s</span>
-                <span>{duration}s</span>
-              </div>
-              <div className="w-full bg-gray-300/70 dark:bg-gray-700/50 rounded-full h-2">
-                <div
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300" // Gradient can remain same for both themes or be adapted
-                  style={{
-                    width: `${Math.min(
-                      (currentTime / duration) * 100,
-                      100
-                    )}%`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

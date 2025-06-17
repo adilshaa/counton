@@ -558,7 +558,8 @@ const TimeCounterVideoApp = () => {
       const effectiveSpeed = useCustomSpeed ? customSpeed : speed;
       intervalRef.current = setInterval(() => {
           setCurrentTime((prevTime) => {
-              const newTime = prevTime + (1 / (1000 / (1000 / effectiveSpeed))) / (1000 / 100); // Adjusted for 10ms interval
+              // Corrected increment for 10ms interval
+              const newTime = prevTime + effectiveSpeed / 100;
               if (newTime >= duration) {
                   clearInterval(intervalRef.current);
                   if (isRecording && mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
