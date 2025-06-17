@@ -1,19 +1,21 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@clerk/clerk-react';
 
 const ProtectedRoute = () => {
-  const { isAuthenticated } = useAuth();
+  const { isLoaded, userId } = useAuth();
 
-  if (!isAuthenticated) {
-    // If not authenticated, redirect to the login page.
-    // `replace` prop ensures that the login route does not get added to history,
-    // so clicking 'back' after login won't take you back to the login page.
+  if (!isLoaded) {
+    // Wait for Clerk to load before making a decision
+    return null; // Or a loading spinner
+  }
+
+  if (!userId) {
+    // If not signed in after Clerk has loaded, redirect to the login page.
     return <Navigate to="/login" replace />;
   }
 
-  // If authenticated, render the child routes.
-  // <Outlet /> is a placeholder for the nested route's component.
+  // If signed in, render the child routes.
   return <Outlet />;
 };
 

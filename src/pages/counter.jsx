@@ -3,7 +3,7 @@ import { Film } from "lucide-react";
 import ControlsPanel from '../components/ControlsPanel';
 import VideoPreview from '../components/VideoPreview';
 import ActionButtons from '../components/ActionButtons';
-import AuthDetails from '../components/AuthDetails';
+import { UserButton } from '@clerk/clerk-react'; // New import
 import { useTheme } from '../contexts/ThemeContext'; // Import useTheme
 
 const TimeCounterVideoApp = () => {
@@ -702,7 +702,8 @@ const TimeCounterVideoApp = () => {
         />
         <div className="flex-1 h-full flex flex-col overflow-hidden">
           <div className="absolute top-4 right-4 z-50">
-            <AuthDetails />
+            {/* Replaced AuthDetails with UserButton */}
+            <UserButton afterSignOutUrl="/login" />
           </div>
           <VideoPreview
             className="flex-grow min-h-0" // Added classes

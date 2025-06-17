@@ -1,16 +1,21 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@clerk/clerk-react';
 
 const PublicRouteOnly = () => {
-  const { isAuthenticated } = useAuth();
+  const { isLoaded, userId } = useAuth();
 
-  if (isAuthenticated) {
-    // If authenticated, redirect to the main app page (e.g., dashboard or home).
+  if (!isLoaded) {
+    // Wait for Clerk to load
+    return null; // Or a loading spinner
+  }
+
+  if (userId) {
+    // If signed in after Clerk has loaded, redirect to the main app page.
     return <Navigate to="/" replace />;
   }
 
-  // If not authenticated, render the child route component (e.g., Login or Register page).
+  // If not signed in, render the child route component (e.g., Clerk's SignIn or SignUp page).
   return <Outlet />;
 };
 
