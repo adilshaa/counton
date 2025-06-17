@@ -31,8 +31,15 @@ const ControlsPanel = ({
   setCounterStyle,
   timerFontSize,
   setTimerFontSize,
-  isRecordingGif,      // New prop for GIF mode
-  setIsRecordingGif,   // New prop for setting GIF mode
+  isRecordingGif,
+  setIsRecordingGif,
+  selectedFontFamily,    // New font props
+  setSelectedFontFamily,
+  customFontInput,
+  setCustomFontInput,
+  defaultFonts,
+  loadedCustomFonts,
+  setLoadedCustomFonts,
   // Add other props that might be identified as necessary later
 }) => {
   return (
@@ -120,8 +127,15 @@ const ControlsPanel = ({
             <StyleTab
               background={background}
               setBackground={setBackground}
-              timerFontSize={timerFontSize} // Pass timerFontSize
-              setTimerFontSize={setTimerFontSize} // Pass setTimerFontSize
+              timerFontSize={timerFontSize}
+              setTimerFontSize={setTimerFontSize}
+              selectedFontFamily={selectedFontFamily} // Pass font props
+              setSelectedFontFamily={setSelectedFontFamily}
+              customFontInput={customFontInput}
+              setCustomFontInput={setCustomFontInput}
+              defaultFonts={defaultFonts}
+              loadedCustomFonts={loadedCustomFonts}
+              setLoadedCustomFonts={setLoadedCustomFonts}
             />
           )}
 

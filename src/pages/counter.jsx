@@ -22,6 +22,12 @@ const TimeCounterVideoApp = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [timerFontSize, setTimerFontSize] = useState(48); // Default to 48px (within 1-100px range)
 
+  // Font Management State
+  const defaultFontFamily = "Inter, system-ui, sans-serif";
+  const [selectedFontFamily, setSelectedFontFamily] = useState(defaultFontFamily);
+  const [customFontInput, setCustomFontInput] = useState('');
+  const [loadedCustomFonts, setLoadedCustomFonts] = useState([]);
+
   // GIF Recording State and Refs
   const [isRecordingGif, setIsRecordingGif] = useState(false);
   const [isRenderingGif, setIsRenderingGif] = useState(false); // New state for GIF rendering
@@ -68,6 +74,11 @@ const TimeCounterVideoApp = () => {
   useEffect(() => { effectiveSpeedRef.current = useCustomSpeed ? customSpeed : speed; }, [useCustomSpeed, customSpeed, speed]);
   useEffect(() => { loopCurrentTimeRef.current = currentTime; }, [currentTime]);
 
+  const defaultFonts = [
+    { name: "Sans Serif (Default)", family: defaultFontFamily, type: 'default' },
+    { name: "Serif", family: "Georgia, serif", type: 'default' },
+    { name: "Monospace", family: "monospace", type: 'default' }
+  ];
 
   const formatTime = (seconds) => {
     const totalSeconds = Math.max(0, Math.floor(seconds));
@@ -290,13 +301,13 @@ const TimeCounterVideoApp = () => {
       }
       previousTime.current = time;
     },
-    [ duration, countMode, background, counterStyle, counterType, startNumber, endNumber, numberCountMode, appTheme, timerFontSize ]
+    [ duration, countMode, background, counterStyle, counterType, startNumber, endNumber, numberCountMode, appTheme, timerFontSize, selectedFontFamily ] // Added selectedFontFamily
   );
 
   // Extracted actual drawing logic to these functions for clarity
   const drawCounterWithStyle = (ctx, timeData, width, height, progress, previousTimeData, dynamicFontSize) => {
     const fontSize = dynamicFontSize;
-    ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
+    ctx.font = `bold ${fontSize}px ${selectedFontFamily}`; // Use selectedFontFamily
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const centerX = width / 2;
@@ -447,7 +458,7 @@ const TimeCounterVideoApp = () => {
 
   const drawNumberCounter = (ctx, numberData, width, height, progress, previousNumberData, dynamicFontSize) => {
     const fontSize = dynamicFontSize;
-    ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
+    ctx.font = `bold ${fontSize}px ${selectedFontFamily}`; // Use selectedFontFamily
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const centerX = width / 2;
@@ -826,8 +837,15 @@ const TimeCounterVideoApp = () => {
           setNumberCountMode={setNumberCountMode}
           timerFontSize={timerFontSize}
           setTimerFontSize={setTimerFontSize}
-          isRecordingGif={isRecordingGif} // Pass GIF state
-          setIsRecordingGif={setIsRecordingGif} // Pass GIF setter
+          isRecordingGif={isRecordingGif}
+          setIsRecordingGif={setIsRecordingGif}
+          selectedFontFamily={selectedFontFamily}     // Font props
+          setSelectedFontFamily={setSelectedFontFamily}
+          customFontInput={customFontInput}
+          setCustomFontInput={setCustomFontInput}
+          defaultFonts={defaultFonts}
+          loadedCustomFonts={loadedCustomFonts}
+          setLoadedCustomFonts={setLoadedCustomFonts}
         />
         <div className="flex-1 h-full flex flex-col overflow-hidden">
           <div className="absolute top-4 right-4 z-50">
