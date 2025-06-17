@@ -35,12 +35,26 @@ const TimeCounterVideoApp = () => {
 
   const canvasRef = useRef(null);
   const mediaRecorderRef = useRef(null);
-  // Removed intervalRef, added animationFrameRef and lastFrameTimeRef
   const animationFrameRef = useRef(null);
   const lastFrameTimeRef = useRef(performance.now());
   const streamRef = useRef(null);
   const animationPhase = useRef(0);
   const previousTime = useRef(-1);
+
+  // Refs for state values to be used in animationLoop
+  const isRecordingRef = useRef(isRecording);
+  const isPausedRef = useRef(isPaused);
+  const durationRef = useRef(duration);
+  const effectiveSpeedRef = useRef(useCustomSpeed ? customSpeed : speed);
+  const loopCurrentTimeRef = useRef(currentTime);
+
+  // useEffects to keep refs in sync with state
+  useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
+  useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
+  useEffect(() => { durationRef.current = duration; }, [duration]);
+  useEffect(() => { effectiveSpeedRef.current = useCustomSpeed ? customSpeed : speed; }, [useCustomSpeed, customSpeed, speed]);
+  useEffect(() => { loopCurrentTimeRef.current = currentTime; }, [currentTime]);
+
 
   const formatTime = (seconds) => {
     const totalSeconds = Math.max(0, Math.floor(seconds));
@@ -485,7 +499,7 @@ const TimeCounterVideoApp = () => {
   }, []);
 
   const animationLoop = useCallback((timestamp) => {
-    if (!isRecording || isPaused) { // Access state directly
+    if (!isRecordingRef.current || isPausedRef.current) {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       return;
     }
@@ -493,53 +507,45 @@ const TimeCounterVideoApp = () => {
     const deltaTime = timestamp - lastFrameTimeRef.current;
     lastFrameTimeRef.current = timestamp;
 
-    const effectiveSpeed = useCustomSpeed ? customSpeed : speed;
+    loopCurrentTimeRef.current += (deltaTime / 1000) * effectiveSpeedRef.current;
 
-    let newCurrentTimeVal;
-    setCurrentTime(prevTime => {
-      newCurrentTimeVal = prevTime + (deltaTime / 1000) * effectiveSpeed;
+    let newTimeForState = loopCurrentTimeRef.current;
 
-      if (newCurrentTimeVal >= duration) {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-          mediaRecorderRef.current.stop(); // This will trigger onstop
-        } else {
-           // If not recording (e.g. timer ran out before MediaRecorder could stop)
-           // or if MediaRecorder was already stopped.
-          setIsComplete(true);
-          setIsRecording(false); // Ensure recording is marked false if timer completes independently
-          setIsPaused(false);
-        }
-        return duration; // Cap at duration
+    if (loopCurrentTimeRef.current >= durationRef.current) {
+      newTimeForState = durationRef.current;
+      loopCurrentTimeRef.current = durationRef.current; // Cap it
+
+      drawTimer(newTimeForState); // Draw final frame
+      setCurrentTime(newTimeForState); // Update React state
+
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop(); // This will trigger onstop
+      } else {
+        // If MediaRecorder isn't active or already stopped, manually set completion
+        setIsComplete(true);
+        setIsRecording(false); // This will update isRecordingRef via its useEffect
+        setIsPaused(false);   // This will update isPausedRef via its useEffect
       }
-      return newCurrentTimeVal;
-    });
-
-    // It's better to use the newCurrentTimeVal for drawTimer if available immediately,
-    // otherwise drawTimer might use a slightly stale currentTime from state due to async nature of setCurrentTime.
-    // However, drawTimer itself depends on state for many things.
-    // For now, we rely on the useEffect that watches currentTime, or call drawTimer(newCurrentTimeVal)
-    // if that useEffect is removed. Let's assume drawTimer will be called with the most up-to-date time.
-    // The original useEffect for [currentTime, isRecording, isPaused, drawTimer] will handle drawing.
-    // OR, if we remove that useEffect:
-    if (isRecording && !isPaused) { // Check state again, as it might have changed in setCurrentTime
-       drawTimer(newCurrentTimeVal <= duration ? newCurrentTimeVal : duration);
-    }
-
-
-    if (newCurrentTimeVal < duration) {
-      animationFrameRef.current = requestAnimationFrame(animationLoop);
+       // No further frames, isRecordingRef will be false soon
     } else {
-       // Ensure final frame is drawn if it hasn't been due to state update delays
-       drawTimer(duration);
+      drawTimer(newTimeForState);
+      setCurrentTime(newTimeForState);
+      // Only request next frame if still recording and not paused
+      // This check is implicitly handled by the condition at the start of the loop
+      // in the next frame, but good to be explicit.
+      if (isRecordingRef.current && !isPausedRef.current) {
+         animationFrameRef.current = requestAnimationFrame(animationLoop);
+      }
     }
-  }, [isRecording, isPaused, useCustomSpeed, customSpeed, speed, duration, drawTimer]);
+  }, [drawTimer]); // Dependencies: only drawTimer. Others are accessed via refs.
 
 
   const startRecording = async () => {
-    setIsRecording(true);
-    setIsPaused(false);
+    setCurrentTime(0);
+    loopCurrentTimeRef.current = 0;
+    setIsRecording(true); // Triggers ref update
+    setIsPaused(false);   // Triggers ref update
     setIsComplete(false);
-    setCurrentTime(0); // Reset time
     setRecordedChunks([]);
     previousTime.current = -1;
     animationPhase.current = 0;
@@ -640,37 +646,27 @@ const TimeCounterVideoApp = () => {
   };
 
   const pauseRecording = () => {
-    if (!mediaRecorderRef.current) {
-      console.warn("MediaRecorder not available for pause/resume.");
-      return;
-    }
-    // We also need to check isRecording from state, not just mediaRecorderRef.current
-    // as the ref might exist from a previous recording.
-    // This check should ideally be at the beginning or handled by disabling the button.
+    const newPausedState = !isPausedRef.current; // Read from ref, then update state
+    setIsPaused(newPausedState); // This will trigger isPausedRef update via useEffect
 
-    setIsPaused(prevIsPaused => {
-      const newPausedState = !prevIsPaused;
-      if (newPausedState) { // Pausing
-        if (isRecording && mediaRecorderRef.current.state === "recording") {
-          try {
-            mediaRecorderRef.current.pause();
-          } catch (e) { console.error("Error pausing MediaRecorder:", e); }
-        }
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-          animationFrameRef.current = null;
-        }
-      } else { // Resuming
-        if (isRecording && mediaRecorderRef.current.state === "paused") {
+    if (newPausedState) { // Pausing
+      // animationFrameRef.current is cancelled by animationLoop itself when isPausedRef.current becomes true
+      if (isRecordingRef.current && mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        try {
+          mediaRecorderRef.current.pause();
+        } catch (e) { console.error("Error pausing MediaRecorder:", e); }
+      }
+    } else { // Resuming
+      if (isRecordingRef.current) { // Only resume loop if actually recording
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === "paused") {
           try {
             mediaRecorderRef.current.resume();
           } catch (e) { console.error("Error resuming MediaRecorder:", e); }
         }
-        lastFrameTimeRef.current = performance.now(); // Reset for accurate deltaTime
+        lastFrameTimeRef.current = performance.now();
         animationFrameRef.current = requestAnimationFrame(animationLoop);
       }
-      return newPausedState;
-    });
+    }
   };
 
   const stopRecording = () => {
