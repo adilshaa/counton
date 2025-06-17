@@ -14,6 +14,7 @@ import EffectsTab from '../components/EffectsTab'; // Import EffectsTab
 const TimeCounterVideoApp = () => {
   const { theme: appTheme } = useTheme();
 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // New state for sidebar
   const [duration, setDuration] = useState(60);
   const [countMode, setCountMode] = useState("countdown");
   const [speed, setSpeed] = useState(1);
@@ -357,6 +358,8 @@ const TimeCounterVideoApp = () => {
         <ControlsPanel
           activeModal={activeModal}
           setActiveModal={setActiveModal}
+          isSidebarCollapsed={isSidebarCollapsed} // Pass sidebar state
+          setIsSidebarCollapsed={setIsSidebarCollapsed} // Pass sidebar setter
         />
         <div className="flex-1 h-full flex flex-col overflow-hidden">
           <div className="absolute top-4 right-4 z-50">
