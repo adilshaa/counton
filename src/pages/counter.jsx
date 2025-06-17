@@ -190,36 +190,73 @@ const TimeCounterVideoApp = () => {
           displayTime = Math.min(time, duration);
         }
         const currentTimeData = formatTime(displayTime);
+        const previousTimeValueForTime = previousTime.current; // Capture for time counter
         const previousTimeData =
-          previousTime.current >= 0
+          previousTimeValueForTime >= 0
             ? formatTime(
                 countMode === "countdown"
-                  ? Math.max(0, duration - previousTime.current)
-                  : Math.min(previousTime.current, duration)
+                  ? Math.max(0, duration - previousTimeValueForTime)
+                  : Math.min(previousTimeValueForTime, duration)
               )
             : null;
-        const progress = time / duration;
+        // Robust progress calculation for time type (though less critical here if duration > 0 is guaranteed for active timer)
+        const progress = duration > 0 ? Math.min(time / duration, 1) : (time > 0 ? 1 : 0);
         drawCounterWithStyle(ctx, currentTimeData, displayWidth, displayHeight, progress, previousTimeData, timerFontSize);
-      } else {
-        const totalNumbers = Math.abs(endNumber - startNumber) + 1;
-        const progress = Math.min(time / duration, 1);
+      } else { // counterType === "number"
+        const sNum = parseFloat(startNumber) || 0;
+        const eNum = parseFloat(endNumber) || 0;
+
+        const actualStart = Math.min(sNum, eNum);
+        const actualEnd = Math.max(sNum, eNum);
+        const range = actualEnd - actualStart;
+
+        // Robust progress calculation
+        const progress = duration > 0 ? Math.min(time / duration, 1) : (time > 0 ? 1 : 0);
         let displayNumber;
+
         if (numberCountMode === "countup") {
-          displayNumber = startNumber + Math.floor(progress * totalNumbers);
-          displayNumber = Math.min(displayNumber, endNumber);
-        } else {
-          displayNumber = endNumber - Math.floor(progress * totalNumbers);
-          displayNumber = Math.max(displayNumber, startNumber);
+          // Ensure that for progress = 1, displayNumber reaches actualEnd
+          if (progress === 1) {
+            displayNumber = actualEnd;
+          } else {
+            displayNumber = actualStart + Math.floor(progress * range);
+          }
+          displayNumber = Math.min(displayNumber, actualEnd);
+        } else { // "countdown"
+          // Ensure that for progress = 1, displayNumber reaches actualStart
+           if (progress === 1) {
+            displayNumber = actualStart;
+          } else {
+            displayNumber = actualEnd - Math.floor(progress * range);
+          }
+          displayNumber = Math.max(displayNumber, actualStart);
         }
+
         const currentNumberData = formatNumber(displayNumber);
-        const previousNumberData =
-          previousTime.current >= 0
-            ? formatNumber(
-                numberCountMode === "countup"
-                  ? Math.min(startNumber + Math.floor((previousTime.current / duration) * totalNumbers), endNumber)
-                  : Math.max(endNumber - Math.floor((previousTime.current / duration) * totalNumbers), startNumber)
-              )
-            : null;
+
+        const previousTimeValue = previousTime.current;
+
+        let prevDisplayNumberCalculation;
+        if (previousTimeValue >= 0) {
+            const prevProgress = duration > 0 ? Math.min(previousTimeValue / duration, 1) : (previousTimeValue > 0 ? 1 : 0);
+            if (numberCountMode === "countup") {
+                if (prevProgress === 1) {
+                    prevDisplayNumberCalculation = actualEnd;
+                } else {
+                    prevDisplayNumberCalculation = actualStart + Math.floor(prevProgress * range);
+                }
+                prevDisplayNumberCalculation = Math.min(prevDisplayNumberCalculation, actualEnd);
+            } else { // "countdown"
+                if (prevProgress === 1) {
+                    prevDisplayNumberCalculation = actualStart;
+                } else {
+                    prevDisplayNumberCalculation = actualEnd - Math.floor(prevProgress * range);
+                }
+                prevDisplayNumberCalculation = Math.max(prevDisplayNumberCalculation, actualStart);
+            }
+        }
+        const previousNumberData = previousTimeValue >= 0 ? formatNumber(prevDisplayNumberCalculation) : null;
+
         drawNumberCounter(ctx, currentNumberData, displayWidth, displayHeight, progress, previousNumberData, timerFontSize);
       }
       previousTime.current = time;
