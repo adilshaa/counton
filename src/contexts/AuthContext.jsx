@@ -12,6 +12,7 @@ import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
 
 const AuthContext = createContext(null);
 const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -20,57 +21,88 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      setIsLoading(true); // Explicitly set loading true at the start of this async op
-      // const existingToken = localStorage.getItem(ACCESS_TOKEN_KEY); // existingToken check removed as per plan
+      setIsLoading(true);
+      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-      try {
-        console.log('Attempting to refresh token on initial load...');
-        const refreshResponse = await axiosInstance.post('/auth/refresh-token', {});
+      if (storedRefreshToken) {
+        try {
+          console.log('Attempting to refresh token on initial load using stored RT...');
+          // The axiosInstance response interceptor might handle storing new tokens if this call
+          // itself doesn't directly use the response. But this call is to get the initial AT.
+          // The interceptor won't run for this specific call if it's successful (not 401/403).
+          // So, we need to handle the response from refresh-token directly here.
 
-        if (refreshResponse.data && refreshResponse.data.accessToken) {
-          console.log('Initial refresh successful, fetching user data...');
-          try {
-            const userResponse = await axiosInstance.get('/auth/me');
-            if (userResponse.data) {
-              setSession(localStorage.getItem(ACCESS_TOKEN_KEY), userResponse.data);
-            } else {
+          const refreshResponse = await axiosInstance.post('/auth/refresh-token', {
+            refreshToken: storedRefreshToken
+          });
+
+          if (refreshResponse.data && refreshResponse.data.accessToken && refreshResponse.data.refreshToken) {
+            const newAccessToken = refreshResponse.data.accessToken;
+            const newRefreshToken = refreshResponse.data.refreshToken;
+
+            // Explicitly store new tokens from this refresh call
+            localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+            localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+
+            console.log('Initial refresh successful, fetching user data...');
+            try {
+              // axiosInstance will now use the newAccessToken from localStorage via its request interceptor
+              const userResponse = await axiosInstance.get('/auth/me');
+              if (userResponse.data) {
+                // Pass all three items to setSession
+                setSession(newAccessToken, newRefreshToken, userResponse.data);
+              } else {
+                // Unlikely if /auth/me is successful but returns no data
+                clearSession();
+              }
+            } catch (userError) {
+              console.error('Failed to fetch user data after initial refresh:', userError);
               clearSession();
             }
-          } catch (userError) {
-            console.error('Failed to fetch user data after initial refresh:', userError);
+          } else {
+            // Refresh response was OK, but didn't contain expected tokens
+            console.log('Initial refresh response OK, but missing new tokens.');
             clearSession();
           }
-        } else {
-          console.log('Initial refresh did not return access token.');
-          clearSession();
+        } catch (error) {
+          // This catch handles errors from the /auth/refresh-token call itself
+          // (e.g., network error, or backend returns 401/403 if refresh token is invalid)
+          console.log('Initial token refresh failed:', error.message);
+          clearSession(); // This is important if refresh token is invalid
         }
-      } catch (error) {
-        console.log('Initial token refresh failed:', error.message);
-        clearSession();
+      } else {
+        // No stored refresh token
+        console.log('No refresh token found on initial load.');
+        clearSession(); // This also sets isLoading = false
       }
-      // setIsLoading(false); // isLoading is set by setSession/clearSession
+      // setIsLoading(false); // isLoading is now set by setSession/clearSession
     };
 
     initializeAuth();
   }, []); // Empty dependency array ensures it runs once on mount
 
   // Helper function to set session
-  const setSession = (accessToken, userData) => {
+  const setSession = (accessToken, refreshToken, userData) => {
     if (accessToken) {
       localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-      // Update axiosInstance defaults if needed, though interceptor should handle new requests
-      // axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     } else {
       localStorage.removeItem(ACCESS_TOKEN_KEY);
-      // delete axiosInstance.defaults.headers.common['Authorization'];
+    }
+    if (refreshToken) { // New: Handle refreshToken
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    } else {
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
     }
 
-    if (userData) {
+    if (userData && accessToken && refreshToken) { // Be stricter: need all for a valid session
       setCurrentUser(userData);
       setIsAuthenticated(true);
     } else {
+      // If essential parts are missing, treat as no session
       setCurrentUser(null);
       setIsAuthenticated(false);
+      localStorage.removeItem(ACCESS_TOKEN_KEY); // Ensure cleanup
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
     }
     setIsLoading(false);
   };
@@ -78,7 +110,7 @@ export const AuthProvider = ({ children }) => {
   // Helper function to clear session
   const clearSession = () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
-    // delete axiosInstance.defaults.headers.common['Authorization'];
+    localStorage.removeItem(REFRESH_TOKEN_KEY); // New: Remove refreshToken
     setCurrentUser(null);
     setIsAuthenticated(false);
     setIsLoading(false);
@@ -94,8 +126,9 @@ export const AuthProvider = ({ children }) => {
         password: password,
       });
 
-      if (response.data && response.data.accessToken && response.data.user) {
-        setSession(response.data.accessToken, response.data.user);
+      if (response.data && response.data.accessToken && response.data.refreshToken && response.data.user) {
+        // The backend is expected to return accessToken, refreshToken, and user object upon successful registration
+        setSession(response.data.accessToken, response.data.refreshToken, response.data.user);
         return { success: true, message: response.data.message || 'Registration successful!' };
       } else {
         // Should not happen if backend adheres to spec and status is 201
@@ -124,8 +157,9 @@ export const AuthProvider = ({ children }) => {
         password: password,
       });
 
-      if (response.data && response.data.accessToken && response.data.user) {
-        setSession(response.data.accessToken, response.data.user);
+      if (response.data && response.data.accessToken && response.data.refreshToken && response.data.user) {
+        // The backend is expected to return accessToken, refreshToken, and user object upon successful login
+        setSession(response.data.accessToken, response.data.refreshToken, response.data.user);
         return { success: true, message: response.data.message || 'Login successful!' };
       } else {
         // Should not happen if backend adheres to spec and status is 200
@@ -147,6 +181,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
     // setIsLoading(true); // Optional
     try {
       // Call the backend to invalidate the session/refresh token cookie
@@ -154,7 +189,7 @@ export const AuthProvider = ({ children }) => {
       // axiosInstance will automatically include the Authorization header with the access token,
       // though it's typically not required for a logout endpoint.
       // The main purpose is to hit the endpoint so server can clear HttpOnly refresh token cookie.
-      await axiosInstance.post('/auth/logout', {}); // Sending empty object as body
+      await axiosInstance.post('/auth/logout', { refreshToken: storedRefreshToken }); // New call
     } catch (error) {
       // Log the error but proceed to clear client-side session anyway
       console.error('Error during backend logout:', error);

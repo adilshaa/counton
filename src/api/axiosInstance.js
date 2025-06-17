@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:3000';
 const ACCESS_TOKEN_KEY = 'accessToken'; // Key for storing access token in localStorage
+const REFRESH_TOKEN_KEY = 'refreshToken'; // Key for storing refresh token in localStorage
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -66,33 +67,50 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        console.log('Attempting to refresh token...');
-        const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {}, {
-          withCredentials: true // Ensures HttpOnly cookie is sent cross-origin
-        });
+        const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        if (!storedRefreshToken) {
+          console.log('No refresh token found for refresh attempt.');
+          localStorage.removeItem(ACCESS_TOKEN_KEY); // Clear access token too
+          processQueue(new Error('No refresh token available.'), null);
+          window.location.href = '/login';
+          return Promise.reject(new Error('No refresh token available.'));
+        }
 
-        if (refreshResponse.status === 200 && refreshResponse.data.accessToken) {
+        console.log('Attempting to refresh token with client-side token...');
+        // Use axios.post to avoid interceptor loop for this specific call
+        const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh-token`,
+          { refreshToken: storedRefreshToken } // Send storedRefreshToken in body
+          // No withCredentials: true needed here anymore
+        );
+
+        // Backend now returns new accessToken AND new refreshToken
+        if (refreshResponse.status === 200 && refreshResponse.data.accessToken && refreshResponse.data.refreshToken) {
           const newAccessToken = refreshResponse.data.accessToken;
-          console.log('Token refreshed successfully.');
-          localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
-          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`; // Update default for subsequent calls
-          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`; // Update current request
+          const newRefreshToken = refreshResponse.data.refreshToken; // Get new refresh token
 
-          processQueue(null, newAccessToken); // Process queued requests with new token
-          return axiosInstance(originalRequest); // Retry original request
+          console.log('Token refreshed successfully. New AT and RT received.');
+          localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+          localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken); // Store new refresh token.
+
+          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+
+          processQueue(null, newAccessToken);
+          return axiosInstance(originalRequest);
         } else {
-          // Refresh token failed (e.g. not 200 OK or no access token)
-          console.error('Refresh token response not OK or no new access token.');
+          console.error('Refresh token response not OK or missing new tokens.');
           localStorage.removeItem(ACCESS_TOKEN_KEY);
-          processQueue(new Error('Failed to refresh token.'), null);
-          window.location.href = '/login'; // Redirect to login
-          return Promise.reject(new Error('Failed to refresh token.'));
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          processQueue(new Error('Failed to refresh token (unexpected response).'), null);
+          window.location.href = '/login';
+          return Promise.reject(new Error('Failed to refresh token (unexpected response).'));
         }
       } catch (refreshError) {
         console.error('Error during token refresh:', refreshError);
         localStorage.removeItem(ACCESS_TOKEN_KEY);
-        processQueue(refreshError, null); // Process queued requests with error
-        // Check if the error is from the API (e.g. refresh token invalid) or network
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        processQueue(refreshError, null);
+
         if (refreshError.response && (refreshError.response.status === 401 || refreshError.response.status === 403)) {
           console.log('Refresh token is invalid or expired. Redirecting to login.');
         }
