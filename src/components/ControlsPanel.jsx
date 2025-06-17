@@ -16,7 +16,7 @@ const ControlsPanel = ({
         isSidebarCollapsed ? 'w-20' : 'w-80' // Dynamic width
       }`}
     >
-      <div className="p-6 space-y-6 flex flex-col h-full"> {/* Added flex flex-col h-full */}
+      <div className={`${isSidebarCollapsed ? 'px-2 py-6' : 'p-6'} space-y-6 flex flex-col h-full`}> {/* Conditional padding */}
         {/* Header in Sidebar */}
         {isSidebarCollapsed ? (
           <div className="flex justify-center py-2 my-1"> {/* Adjusted padding for icon */}
@@ -39,7 +39,7 @@ const ControlsPanel = ({
             <button
               onClick={() => setActiveModal("settings")}
               title={isSidebarCollapsed ? "Settings" : undefined}
-              className={`flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center justify-center sm:justify-start gap-2 ${isSidebarCollapsed ? 'p-3' : 'px-3 py-2'} rounded-lg font-medium transition-all ${
                 activeModal === "settings"
                   ? "bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30 shadow-lg backdrop-blur-sm"
                   : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
@@ -51,7 +51,7 @@ const ControlsPanel = ({
             <button
               onClick={() => setActiveModal("style")}
               title={isSidebarCollapsed ? "Style" : undefined}
-              className={`flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center justify-center sm:justify-start gap-2 ${isSidebarCollapsed ? 'p-3' : 'px-3 py-2'} rounded-lg font-medium transition-all ${
                 activeModal === "style"
                   ? "bg-purple-100 text-purple-700 border border-purple-300 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30 shadow-lg backdrop-blur-sm"
                   : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
@@ -63,7 +63,7 @@ const ControlsPanel = ({
             <button
               onClick={() => setActiveModal("effects")}
               title={isSidebarCollapsed ? "Effects" : undefined}
-              className={`flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center justify-center sm:justify-start gap-2 ${isSidebarCollapsed ? 'p-3' : 'px-3 py-2'} rounded-lg font-medium transition-all ${
                 activeModal === "effects"
                   ? "bg-pink-100 text-pink-700 border border-pink-300 dark:bg-pink-500/20 dark:text-pink-400 dark:border-pink-500/30 shadow-lg backdrop-blur-sm"
                   : "text-slate-600 hover:text-slate-800 hover:bg-gray-300/50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700/30"
