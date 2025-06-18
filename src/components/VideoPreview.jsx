@@ -8,8 +8,8 @@ const VideoPreview = ({
   duration,
 }) => {
   return (
-    <div className="flex-1 p-6 flex flex-col min-h-0">
-      <div className="flex-1 bg-white/70 dark:bg-gray-800/20 backdrop-blur-xl rounded-2xl p-6 border border-gray-300/60 dark:border-gray-700/20 transition-colors duration-300">
+    <div className="h-full flex flex-col">
+      <div className="h-full bg-white/70 dark:bg-gray-800/20 backdrop-blur-xl rounded-2xl p-2 border border-gray-300/60 dark:border-gray-700/20 transition-colors duration-300">
         <div className="mb-4">
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-1">
             Video Preview
