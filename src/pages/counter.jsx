@@ -354,23 +354,20 @@ const TimeCounterVideoApp = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-slate-900 dark:to-black p-0 transition-colors duration-300">
-      <div className="w-full h-screen flex items-start p-4 space-x-4">
-        {/* ControlsPanel Wrapper */}
-        <div className="h-[33vh]">
-            <ControlsPanel
-                activeModal={activeModal}
-                setActiveModal={setActiveModal}
-                isSidebarCollapsed={isSidebarCollapsed}
-                setIsSidebarCollapsed={setIsSidebarCollapsed}
-            />
-        </div>
+      <div className="w-full h-screen flex relative">
+        <ControlsPanel
+            activeModal={activeModal}
+            setActiveModal={setActiveModal}
+            isSidebarCollapsed={isSidebarCollapsed}
+            setIsSidebarCollapsed={setIsSidebarCollapsed}
+        />
 
-        {/* Video and Actions Area Wrapper */}
-        <div className="flex flex-col items-center justify-center">
+        {/* Main Content Area (to the right of ControlsPanel) */}
+        <div className="flex-1 h-full flex flex-col items-center justify-center p-4 overflow-auto">
           {/* <div className="absolute top-4 right-4 z-50"> UserButton removed from here */}
             {/* <UserButton afterSignOutUrl="/login" /> */}
           {/* </div> */}
-          <div className="w-[33vw] h-[33vh] shadow-xl rounded-2xl overflow-hidden border border-gray-300 dark:border-gray-700">
+          <div className="w-[33vw] h-[33vh] shadow-xl rounded-2xl overflow-hidden border border-gray-300 dark:border-gray-700 flex-shrink-0">
             <VideoPreview
               canvasRef={canvasRef}
               isRecording={isRecording}
@@ -379,7 +376,7 @@ const TimeCounterVideoApp = () => {
               duration={duration}
             />
           </div>
-          <div className="w-[33vw] mt-4">
+          <div className="w-[33vw] mt-4 flex-shrink-0">
             <ActionButtons
               isRecording={isRecording}
               isPaused={isPaused}
@@ -392,8 +389,8 @@ const TimeCounterVideoApp = () => {
             isRenderingGif={isRenderingGif}
           />
         </div>
-      </div> {/* This closes "Video and Actions Area Wrapper" */}
-    </div> {/* This closes "w-full h-screen flex items-start..." */}
+      </div>
+    </div>
 
       <Modal isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)} title="Timer Settings">
         <SettingsTab
