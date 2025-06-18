@@ -354,27 +354,35 @@ const TimeCounterVideoApp = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-slate-900 dark:to-black p-0 transition-colors duration-300">
-      <div className="w-full h-screen flex relative">
-        <ControlsPanel
-          activeModal={activeModal}
-          setActiveModal={setActiveModal}
-          isSidebarCollapsed={isSidebarCollapsed} // Pass sidebar state
-          setIsSidebarCollapsed={setIsSidebarCollapsed} // Pass sidebar setter
-        />
-        <div className="flex-1 h-full flex flex-col overflow-hidden">
-          <div className="absolute top-4 right-4 z-50">
-            <UserButton afterSignOutUrl="/login" />
+      <div className="w-full h-screen flex items-start p-4 space-x-4">
+        {/* ControlsPanel Wrapper */}
+        <div className="h-[33vh]">
+            <ControlsPanel
+                activeModal={activeModal}
+                setActiveModal={setActiveModal}
+                isSidebarCollapsed={isSidebarCollapsed}
+                setIsSidebarCollapsed={setIsSidebarCollapsed}
+            />
+        </div>
+
+        {/* Video and Actions Area Wrapper */}
+        <div className="flex flex-col items-center justify-center">
+          {/* <div className="absolute top-4 right-4 z-50"> UserButton removed from here */}
+            {/* <UserButton afterSignOutUrl="/login" /> */}
+          {/* </div> */}
+          <div className="w-[33vw] h-[33vh] shadow-xl rounded-2xl overflow-hidden border border-gray-300 dark:border-gray-700">
+            <VideoPreview
+              canvasRef={canvasRef}
+              isRecording={isRecording}
+              isPaused={isPaused}
+              currentTime={currentTime}
+              duration={duration}
+            />
           </div>
-          <VideoPreview
-            canvasRef={canvasRef}
-            isRecording={isRecording}
-            isPaused={isPaused}
-            currentTime={currentTime}
-            duration={duration}
-          />
-          <ActionButtons
-            isRecording={isRecording}
-            isPaused={isPaused}
+          <div className="w-[33vw] mt-4">
+            <ActionButtons
+              isRecording={isRecording}
+              isPaused={isPaused}
             isComplete={isComplete}
             startRecording={startRecording}
             pauseRecording={pauseRecording}
