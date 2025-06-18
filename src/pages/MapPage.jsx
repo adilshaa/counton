@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
-const WorldMap = () => {
+const MapPage = () => {
   const svgRef = useRef();
   const [worldData, setWorldData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -318,4 +318,4 @@ const WorldMap = () => {
   );
 };
 
-export default WorldMap;
+export default MapPage;
