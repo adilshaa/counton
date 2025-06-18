@@ -10,9 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@paypal/react-paypal-js": "^8.8.3",
     "@clerk/clerk-react": "^4.30.8",
+    "@paypal/react-paypal-js": "^8.8.3",
     "axios": "^1.10.0",
+    "d3": "^7.9.0",
     "gif.js": "^0.2.0",
     "lucide-react": "^0.513.0",
     "react": "^19.1.0",

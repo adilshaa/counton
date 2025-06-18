@@ -6,6 +6,7 @@ import RegistrationPage from './pages/RegistrationPage';
 // Only UserProfile might be needed from here now, or this import might be removed if not used.
 import { UserProfile } from '@clerk/clerk-react';
 import TimeCounterVideoApp from './pages/counter';
+import MapPage from './pages/MapPage'; // <-- IMPORT THE NEW MAP PAGE
 // Removed PaymentPage import
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRouteOnly from './components/PublicRouteOnly';
@@ -22,6 +23,7 @@ function App() {
       </Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<TimeCounterVideoApp />} />
+        <Route path="/map" element={<MapPage />} /> {/* <-- ADD THE NEW ROUTE HERE */}
         {/* Removed /payment route */}
         {/* New route for Clerk UserProfile */}
         <Route path="/user-profile" element={<UserProfile path="/user-profile" routing="path" />} />
