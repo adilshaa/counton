@@ -392,7 +392,8 @@ const TimeCounterVideoApp = () => {
             isRenderingGif={isRenderingGif}
           />
         </div>
-      </div>
+      </div> {/* This closes "Video and Actions Area Wrapper" */}
+    </div> {/* This closes "w-full h-screen flex items-start..." */}
 
       <Modal isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)} title="Timer Settings">
         <SettingsTab
