@@ -44,7 +44,7 @@ const MapPage = () => {
         const topojson = await loadTopojson();
 
         // Load world atlas data - using a more reliable source
-        const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json');
+        const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
 
         if (!response.ok) {
           throw new Error(`Failed to fetch world data: ${response.status} ${response.statusText}`);
